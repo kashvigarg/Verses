@@ -1,2 +1,2 @@
-# Barkin
-A social Media Backend
+# Bark
+A social media server
