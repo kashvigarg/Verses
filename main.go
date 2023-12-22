@@ -1,10 +1,13 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+
+	_ "github.com/lib/pq"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jaydee029/Barkin/internal/database"
@@ -16,6 +19,7 @@ type apiconfig struct {
 	DB               *database.DB
 	jwtsecret        string
 	apiKey           string
+	datab            *database.Queries
 }
 
 func main() {
@@ -29,11 +33,24 @@ func main() {
 	if jwt_secret == "" {
 		log.Fatal("JWT secret key not set")
 	}
+
+	dbURL := os.Getenv("DB_CONN")
+	if dbURL == "" {
+		log.Fatal("database connection string not set")
+	}
+
+	dbcon, err := sql.Open("postgres", dbURL)
+	if err != nil {
+		fmt.Print(err.Error())
+	}
+	dbase := database.New(dbcon)
+
 	apicfg := apiconfig{
 		fileservercounts: 0,
 		DB:               db,
 		jwtsecret:        jwt_secret,
 		apiKey:           os.Getenv("POLKA_KEY"),
+		datab:            dbase,
 	}
 
 	port := os.Getenv("PORT")
