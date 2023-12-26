@@ -1,5 +1,6 @@
 package main
 
+/*
 import (
 	"encoding/json"
 	"log"
@@ -144,4 +145,4 @@ func respondWithJson(w http.ResponseWriter, code int, res interface{}) {
 
 	w.WriteHeader(code)
 	w.Write(data)
-}
+}*/

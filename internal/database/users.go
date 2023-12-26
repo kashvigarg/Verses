@@ -1,5 +1,6 @@
 package database
 
+/*
 import (
 	"errors"
 	"os"
@@ -139,3 +140,4 @@ func (db *DB) Is_red(userid int) (User, error) {
 
 	return user, nil
 }
+*/

@@ -1,5 +1,6 @@
 package main
 
+/*
 import (
 	"encoding/json"
 	"io"
@@ -272,3 +273,4 @@ func (cfg *apiconfig) is_red(w http.ResponseWriter, r *http.Request) {
 
 	respondWithJson(w, http.StatusOK, "http request accepted in the webhook")
 }
+*/

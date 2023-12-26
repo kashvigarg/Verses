@@ -1,5 +1,6 @@
 package database
 
+/*
 import (
 	"encoding/json"
 	"errors"
@@ -76,9 +77,9 @@ func (db *DB) loadDB() (dBstructure, error) {
 	if errors.Is(err, os.ErrNotExist) {
 		return dbstructure, err
 	}
-	/*if err != nil {
-		return dbstructure, err
-	}*/
+	//if err != nil {
+	//	return dbstructure, err
+	//}
 	err = json.Unmarshal(data, &dbstructure)
 	if err != nil {
 		return dbstructure, err
@@ -150,3 +151,4 @@ func (db *DB) GetChirps() ([]chirp, error) {
 	return chirps, nil
 
 }
+*/

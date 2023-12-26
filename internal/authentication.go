@@ -1,5 +1,6 @@
 package auth
 
+/*
 import (
 	"errors"
 	"net/http"
@@ -99,3 +100,4 @@ func VerifyAPIkey(headers http.Header) (string, error) {
 
 	return splitToken[1], nil
 }
+*/

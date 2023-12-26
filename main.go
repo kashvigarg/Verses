@@ -1,5 +1,6 @@
 package main
 
+/*
 import (
 	"database/sql"
 	"fmt"
@@ -91,3 +92,4 @@ func main() {
 	log.Printf("The server is live on port %s\n", port)
 	log.Fatal(srv.ListenAndServe())
 }
+*/

@@ -1,5 +1,6 @@
 package database
 
+/*
 import (
 	"errors"
 	"time"
@@ -28,10 +29,10 @@ func (db *DB) Verifyrevocation(refresh_token string) (bool, error) {
 	if !ok {
 		return false, nil
 	}
-	/*
-		if is_revoked.Revoked_at.IsZero() {
-			return true, nil
-		}*/
+
+		//if is_revoked.Revoked_at.IsZero() {
+		//	return true, nil
+		//}
 
 	return true, nil
 }
@@ -94,14 +95,6 @@ func (db *DB) RevokeToken(tokenstring string) error {
 		return err
 	}
 
-	/*User, ok := dbstructure.Revocation[tokenstring]
-
-	if !ok {
-		return errors.New("Refresh Token not found")
-	}
-
-	User.Revoked_at = time.Now().UTC()
-	*/
 	dbstructure.Revocation[tokenstring] = Revoke{
 		Token:      tokenstring,
 		Revoked_at: time.Now().UTC(),
@@ -116,3 +109,4 @@ func (db *DB) RevokeToken(tokenstring string) error {
 	return nil
 
 }
+*/

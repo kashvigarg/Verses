@@ -15,3 +15,11 @@ type Chirp struct {
 	Body     sql.NullString
 	AuthorID uuid.NullUUID
 }
+
+type User struct {
+	AuthorID  uuid.NullUUID
+	ChirpyRed sql.NullBool
+	Password  []byte
+	Email     sql.NullString
+	CreatedAt sql.NullTime
+}
