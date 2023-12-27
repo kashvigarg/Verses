@@ -11,6 +11,14 @@ import (
 	"github.com/google/uuid"
 )
 
+type Chirp struct {
+	ID         int32
+	Body       sql.NullString
+	AuthorID   uuid.UUID
+	CreatedAt  time.Time
+	UpadatedAt sql.NullTime
+}
+
 type User struct {
 	Email     string
 	Passwd    []byte
