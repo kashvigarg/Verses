@@ -17,7 +17,6 @@ import (
 
 type apiconfig struct {
 	fileservercounts int
-	DB               *database.DB
 	jwtsecret        string
 	apiKey           string
 	datab            *database.Queries
@@ -25,10 +24,6 @@ type apiconfig struct {
 
 func main() {
 	godotenv.Load(".env")
-	db, err := database.NewDB("database.json")
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	jwt_secret := os.Getenv("JWT_SECRET")
 	if jwt_secret == "" {
@@ -44,20 +39,17 @@ func main() {
 	if err != nil {
 		fmt.Print(err.Error())
 	}
-	dbase := database.New(dbcon)
+	queries := database.New(dbcon)
 
 	apicfg := apiconfig{
 		fileservercounts: 0,
 		DB:               db,
 		jwtsecret:        jwt_secret,
 		apiKey:           os.Getenv("POLKA_KEY"),
-		datab:            dbase,
+		datab:            queries,
 	}
 
 	port := os.Getenv("PORT")
-
-	fmt.Println(port)
-	fmt.Println(apicfg.jwtsecret)
 
 	r := chi.NewRouter()
 	s := chi.NewRouter()
