@@ -1,7 +1,14 @@
 package main
 
+import (
+	"encoding/json"
+	"log"
+	"net/http"
+)
+
 /*
 import (
+
 	"encoding/json"
 	"log"
 	"net/http"
@@ -10,17 +17,18 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	auth "github.com/jaydee029/Barkin/internal"
+
 )
 
-type Res struct {
-	Author_id int    `json:"author_id"`
-	Body      string `json:"body"`
-	ID        int    `json:"id"`
-}
+	type Res struct {
+		Author_id int    `json:"author_id"`
+		Body      string `json:"body"`
+		ID        int    `json:"id"`
+	}
 
-type body struct {
-	Body string `json:"body"`
-}
+	type body struct {
+		Body string `json:"body"`
+	}
 
 func (cfg *apiconfig) postChirps(w http.ResponseWriter, r *http.Request) {
 
@@ -70,58 +78,58 @@ func (cfg *apiconfig) postChirps(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (cfg *apiconfig) DeleteChirps(w http.ResponseWriter, r *http.Request) {
-	token, err := auth.BearerHeader(r.Header)
+	func (cfg *apiconfig) DeleteChirps(w http.ResponseWriter, r *http.Request) {
+		token, err := auth.BearerHeader(r.Header)
 
-	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, err.Error())
-		return
-	}
-
-	authorid, err := auth.ValidateToken(token, cfg.jwtsecret)
-
-	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, err.Error())
-		return
-	}
-
-	authorid_num, err := strconv.Atoi(authorid)
-
-	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "couldn't parse author id")
-		return
-	}
-
-	chirpidstr := chi.URLParam(r, "chirpId")
-	chirpid, err := strconv.Atoi(chirpidstr)
-	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "couldn't parse chirp id")
-		return
-	}
-
-	err = cfg.DB.Deletechirp(chirpid, authorid_num)
-
-	if err != nil {
-		respondWithError(w, http.StatusForbidden, err.Error())
-		return
-	}
-
-	respondWithJson(w, http.StatusOK, "Chirp deleted")
-}
-
-func profane(content string) string {
-	contentslice := strings.Split(content, " ")
-
-	for i, word := range contentslice {
-		wordl := strings.ToLower(word)
-		if wordl == "kerfuffle" || wordl == "sharbert" || wordl == "fornax" {
-			contentslice[i] = "****"
+		if err != nil {
+			respondWithError(w, http.StatusUnauthorized, err.Error())
+			return
 		}
+
+		authorid, err := auth.ValidateToken(token, cfg.jwtsecret)
+
+		if err != nil {
+			respondWithError(w, http.StatusUnauthorized, err.Error())
+			return
+		}
+
+		authorid_num, err := strconv.Atoi(authorid)
+
+		if err != nil {
+			respondWithError(w, http.StatusBadRequest, "couldn't parse author id")
+			return
+		}
+
+		chirpidstr := chi.URLParam(r, "chirpId")
+		chirpid, err := strconv.Atoi(chirpidstr)
+		if err != nil {
+			respondWithError(w, http.StatusBadRequest, "couldn't parse chirp id")
+			return
+		}
+
+		err = cfg.DB.Deletechirp(chirpid, authorid_num)
+
+		if err != nil {
+			respondWithError(w, http.StatusForbidden, err.Error())
+			return
+		}
+
+		respondWithJson(w, http.StatusOK, "Chirp deleted")
 	}
 
-	return strings.Join(contentslice, " ")
-}
+	func profane(content string) string {
+		contentslice := strings.Split(content, " ")
 
+		for i, word := range contentslice {
+			wordl := strings.ToLower(word)
+			if wordl == "kerfuffle" || wordl == "sharbert" || wordl == "fornax" {
+				contentslice[i] = "****"
+			}
+		}
+
+		return strings.Join(contentslice, " ")
+	}
+*/
 func respondWithError(w http.ResponseWriter, code int, res string) {
 	if code > 499 {
 		log.Printf("Responding with 5XX error: %s", res)
@@ -145,4 +153,4 @@ func respondWithJson(w http.ResponseWriter, code int, res interface{}) {
 
 	w.WriteHeader(code)
 	w.Write(data)
-}*/
+}

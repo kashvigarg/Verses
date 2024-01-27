@@ -1,5 +1,5 @@
 -- name: CreateUser :one
-INSERT INTO users(Email,passwd,id,red,created_at,updated_at) VALUES($1,$2,$3,$4,$5,$6)
+INSERT INTO users(name,Email,passwd,id,red,created_at,updated_at,Name) VALUES($1,$2,$3,$4,$5,$6,$7)
 RETURNING *;
 
 -- name: UpdateUser :one

@@ -1,42 +1,47 @@
 package main
 
-/*
 import (
 	"encoding/json"
 	"io"
 	"net/http"
 	"strconv"
+	"time"
 
+	"github.com/google/uuid"
 	auth "github.com/jaydee029/Barkin/internal"
 	"github.com/jaydee029/Barkin/internal/database"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Input struct {
 	Password string `json:"password"`
 	Email    string `json:"email"`
 }
-
-type Token struct {
-	Token string `json:"token"`
-}
-type User struct {
-	Password      []byte `json:"password"`
-	Email         string `json:"email"`
-	Is_chirpy_red bool   `json:"is_chirpy_red"`
-}
 type res struct {
-	ID            int    `json:"id"`
-	Email         string `json:"email"`
-	Is_chirpy_red bool   `json:"is_chirpy_red"`
-}
-type res_login struct {
-	ID            int    `json:"id"`
-	Email         string `json:"email"`
-	Is_chirpy_red bool   `json:"is_chirpy_red"`
-	Token         string `json:"token"`
-	Refresh_token string `json:"refresh_token"`
+	ID            uuid.UUID `json:"id"`
+	Email         string    `json:"email"`
+	Is_chirpy_red bool      `json:"is_chirpy_red"`
 }
 
+/*
+	type Token struct {
+		Token string `json:"token"`
+	}
+
+	type User struct {
+		Password      []byte `json:"password"`
+		Email         string `json:"email"`
+		Is_chirpy_red bool   `json:"is_chirpy_red"`
+	}
+
+	type res_login struct {
+		ID            int    `json:"id"`
+		Email         string `json:"email"`
+		Is_chirpy_red bool   `json:"is_chirpy_red"`
+		Token         string `json:"token"`
+		Refresh_token string `json:"refresh_token"`
+	}
+*/
 func (cfg *apiconfig) createUser(w http.ResponseWriter, r *http.Request) {
 
 	decoder := json.NewDecoder(r.Body)
@@ -47,8 +52,16 @@ func (cfg *apiconfig) createUser(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, "couldn't decode parameters")
 		return
 	}
+	encrypted, err := bcrypt.GenerateFromPassword([]byte(params.Password), bcrypt.DefaultCost)
 
-	user, err := cfg.DB.CreateUser(params.Email, params.Password)
+	user, err := cfg.DB.CreateUser(r.Context(), database.CreateUserParams{
+		Email:     params.Email,
+		Passwd:    encrypted,
+		ID:        uuid.UUID{},
+		CreatedAt: time.Now().UTC(),
+		UpdatedAt: time.Now().UTC(),
+	})
+
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "couldn't create user")
 		return
@@ -56,13 +69,13 @@ func (cfg *apiconfig) createUser(w http.ResponseWriter, r *http.Request) {
 
 	respondWithJson(w, http.StatusCreated, res{
 		Email: user.Email,
-		ID:    user.Id,
+		ID:    user.ID,
 	})
 }
 
 func (cfg *apiconfig) userLogin(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
-	params := Input{}
+	params := res{}
 	err := decoder.Decode(&params)
 
 	if err != nil {
@@ -70,7 +83,7 @@ func (cfg *apiconfig) userLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := cfg.DB.GetUser(params.Email, params.Password)
+	user, err := cfg.DB.GetUser(r.Context(), params.ID)
 
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
@@ -273,4 +286,3 @@ func (cfg *apiconfig) is_red(w http.ResponseWriter, r *http.Request) {
 
 	respondWithJson(w, http.StatusOK, "http request accepted in the webhook")
 }
-*/

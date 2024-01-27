@@ -1,6 +1,5 @@
 package main
 
-/*
 import (
 	"database/sql"
 	"fmt"
@@ -19,7 +18,7 @@ type apiconfig struct {
 	fileservercounts int
 	jwtsecret        string
 	apiKey           string
-	datab            *database.Queries
+	DB               *database.Queries
 }
 
 func main() {
@@ -43,10 +42,9 @@ func main() {
 
 	apicfg := apiconfig{
 		fileservercounts: 0,
-		DB:               db,
 		jwtsecret:        jwt_secret,
 		apiKey:           os.Getenv("POLKA_KEY"),
-		datab:            queries,
+		DB:               queries,
 	}
 
 	port := os.Getenv("PORT")
@@ -84,4 +82,3 @@ func main() {
 	log.Printf("The server is live on port %s\n", port)
 	log.Fatal(srv.ListenAndServe())
 }
-*/

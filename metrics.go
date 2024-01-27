@@ -1,6 +1,5 @@
 package main
 
-/*
 import (
 	"fmt"
 	"net/http"
@@ -28,4 +27,3 @@ func (cfg *apiconfig) reqcounts(app http.Handler) http.Handler {
 	})
 
 }
-*/
