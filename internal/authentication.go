@@ -1,24 +1,22 @@
 package auth
 
-/*
 import (
 	"errors"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func Tokenize(id int, secret_key string) (string, error) {
+func Tokenize(id string, secret_key string) (string, error) {
 	secret_key_byte := []byte(secret_key)
 
 	claims := &jwt.RegisteredClaims{
 		Issuer:    "chirpy-access",
 		IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
 		ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(time.Duration(60*60) * time.Second)), // 1 hour
-		Subject:   strconv.Itoa(id),
+		Subject:   id,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -29,14 +27,14 @@ func Tokenize(id int, secret_key string) (string, error) {
 	return ss, nil
 }
 
-func RefreshToken(id int, secret_key string) (string, error) {
+func RefreshToken(id string, secret_key string) (string, error) {
 	secret_key_byte := []byte(secret_key)
 
 	claims := &jwt.RegisteredClaims{
 		Issuer:    "chirpy-refresh",
 		IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
 		ExpiresAt: jwt.NewNumericDate(time.Now().UTC().AddDate(0, 2, 0)), // 60 days
-		Subject:   strconv.Itoa(id),
+		Subject:   id,
 	}
 
 	refresh_token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -84,6 +82,7 @@ func ValidateToken(tokenstring, tokenSecret string) (string, error) {
 	return userId, nil
 }
 
+/*
 func VerifyAPIkey(headers http.Header) (string, error) {
 
 	key := headers.Get("Authorization")

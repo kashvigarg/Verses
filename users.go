@@ -2,9 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"io"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -18,9 +16,13 @@ type Input struct {
 	Email    string `json:"email"`
 }
 type res struct {
-	ID            uuid.UUID `json:"id"`
-	Email         string    `json:"email"`
-	Is_chirpy_red bool      `json:"is_chirpy_red"`
+	ID    uuid.UUID `json:"id"`
+	Email string    `json:"email"`
+}
+type res_login struct {
+	Email         string `json:"email"`
+	Token         string `json:"token"`
+	Refresh_token string `json:"refresh_token"`
 }
 
 /*
@@ -32,14 +34,6 @@ type res struct {
 		Password      []byte `json:"password"`
 		Email         string `json:"email"`
 		Is_chirpy_red bool   `json:"is_chirpy_red"`
-	}
-
-	type res_login struct {
-		ID            int    `json:"id"`
-		Email         string `json:"email"`
-		Is_chirpy_red bool   `json:"is_chirpy_red"`
-		Token         string `json:"token"`
-		Refresh_token string `json:"refresh_token"`
 	}
 */
 func (cfg *apiconfig) createUser(w http.ResponseWriter, r *http.Request) {
@@ -75,7 +69,7 @@ func (cfg *apiconfig) createUser(w http.ResponseWriter, r *http.Request) {
 
 func (cfg *apiconfig) userLogin(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
-	params := res{}
+	params := Input{}
 	err := decoder.Decode(&params)
 
 	if err != nil {
@@ -83,21 +77,26 @@ func (cfg *apiconfig) userLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := cfg.DB.GetUser(r.Context(), params.ID)
+	user, err := cfg.DB.GetUser(r.Context(), params.Email)
 
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, err.Error())
+		respondWithError(w, http.StatusInternalServerError, "user not found")
 		return
 	}
+	err = bcrypt.CompareHashAndPassword(user.Passwd, []byte(params.Password))
 
-	Token, err := auth.Tokenize(user.ID, cfg.jwtsecret)
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, "Password doesn't match")
+	}
+
+	Token, err := auth.Tokenize(user.ID.String(), cfg.jwtsecret)
 
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, err.Error())
 		return
 	}
 
-	Refresh_token, err := auth.RefreshToken(user.ID, cfg.jwtsecret)
+	Refresh_token, err := auth.RefreshToken(user.ID.String(), cfg.jwtsecret)
 
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, err.Error())
@@ -105,15 +104,14 @@ func (cfg *apiconfig) userLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondWithJson(w, http.StatusOK, res_login{
-		ID:            user.ID,
-		Email:         user.Email,
-		Is_chirpy_red: user.Is_chirpy_red,
+		Email:         params.Email,
 		Token:         Token,
 		Refresh_token: Refresh_token,
 	})
 
 }
 
+/*
 func (cfg *apiconfig) updateUser(w http.ResponseWriter, r *http.Request) {
 
 	token, err := auth.BearerHeader(r.Header)
@@ -123,7 +121,7 @@ func (cfg *apiconfig) updateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	is_refresh, err := cfg.DB.VerifyRefresh(token, cfg.jwtsecret)
+	is_refresh, err := auth.VerifyRefresh(token, cfg.jwtsecret)
 
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, err.Error())
@@ -150,7 +148,7 @@ func (cfg *apiconfig) updateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	decoder := json.NewDecoder(r.Body)
-	params := User{}
+	params := Input{}
 	err = decoder.Decode(&params)
 
 	hashedPasswd, err := cfg.DB.Hashpassword(string(params.Password))
@@ -169,9 +167,8 @@ func (cfg *apiconfig) updateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondWithJson(w, http.StatusOK, res{
-		ID:            updateduser.ID,
-		Email:         updateduser.Email,
-		Is_chirpy_red: updateduser.Is_chirpy_red,
+		ID:    updateduser.ID,
+		Email: updateduser.Email,
 	})
 }
 
@@ -286,3 +283,4 @@ func (cfg *apiconfig) is_red(w http.ResponseWriter, r *http.Request) {
 
 	respondWithJson(w, http.StatusOK, "http request accepted in the webhook")
 }
+*/

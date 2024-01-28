@@ -7,7 +7,7 @@ package database
 
 import (
 	"context"
-	"database/sql"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -20,9 +20,9 @@ RETURNING id, body, author_id, created_at, updated_at
 type CreateChirpParams struct {
 	ID        int32
 	Body      string
-	AuthorID  uuid.NullUUID
-	CreatedAt sql.NullTime
-	UpdatedAt sql.NullTime
+	AuthorID  uuid.UUID
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 func (q *Queries) CreateChirp(ctx context.Context, arg CreateChirpParams) (Chirp, error) {

@@ -7,7 +7,7 @@ package database
 
 import (
 	"context"
-	"database/sql"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -22,8 +22,8 @@ type CreateUserParams struct {
 	Email     string
 	Passwd    []byte
 	ID        uuid.UUID
-	CreatedAt sql.NullTime
-	UpdatedAt sql.NullTime
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
@@ -48,12 +48,17 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 }
 
 const getUser = `-- name: GetUser :one
-SELECT passwd FROM users WHERE Email==$1
+SELECT passwd,id FROM users WHERE Email==$1
 `
 
-func (q *Queries) GetUser(ctx context.Context, email string) ([]byte, error) {
+type GetUserRow struct {
+	Passwd []byte
+	ID     uuid.UUID
+}
+
+func (q *Queries) GetUser(ctx context.Context, email string) (GetUserRow, error) {
 	row := q.db.QueryRowContext(ctx, getUser, email)
-	var passwd []byte
-	err := row.Scan(&passwd)
-	return passwd, err
+	var i GetUserRow
+	err := row.Scan(&i.Passwd, &i.ID)
+	return i, err
 }
