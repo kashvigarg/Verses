@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -111,7 +112,6 @@ func (cfg *apiconfig) userLogin(w http.ResponseWriter, r *http.Request) {
 
 }
 
-/*
 func (cfg *apiconfig) updateUser(w http.ResponseWriter, r *http.Request) {
 
 	token, err := auth.BearerHeader(r.Header)
@@ -172,6 +172,7 @@ func (cfg *apiconfig) updateUser(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+/*
 func (cfg *apiconfig) revokeToken(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	params := User{}

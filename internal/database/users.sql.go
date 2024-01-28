@@ -48,17 +48,50 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 }
 
 const getUser = `-- name: GetUser :one
-SELECT passwd,id FROM users WHERE Email==$1
+SELECT name, email, passwd, id, created_at, updated_at FROM users WHERE Email==$1
 `
 
-type GetUserRow struct {
-	Passwd []byte
-	ID     uuid.UUID
+func (q *Queries) GetUser(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUser, email)
+	var i User
+	err := row.Scan(
+		&i.Name,
+		&i.Email,
+		&i.Passwd,
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
-func (q *Queries) GetUser(ctx context.Context, email string) (GetUserRow, error) {
-	row := q.db.QueryRowContext(ctx, getUser, email)
-	var i GetUserRow
-	err := row.Scan(&i.Passwd, &i.ID)
+const updateUser = `-- name: UpdateUser :one
+UPDATE users SET name=$2 ,Email=$3 ,passwd=$4 WHERE id==$1
+RETURNING name, email, passwd, id, created_at, updated_at
+`
+
+type UpdateUserParams struct {
+	ID     uuid.UUID
+	Name   string
+	Email  string
+	Passwd []byte
+}
+
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, updateUser,
+		arg.ID,
+		arg.Name,
+		arg.Email,
+		arg.Passwd,
+	)
+	var i User
+	err := row.Scan(
+		&i.Name,
+		&i.Email,
+		&i.Passwd,
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
 	return i, err
 }
