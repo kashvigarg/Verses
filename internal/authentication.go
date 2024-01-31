@@ -10,6 +10,11 @@ import (
 	"github.com/google/uuid"
 )
 
+type Revoke struct {
+	Token      string    `json:"token"`
+	Revoked_at time.Time `json:"revoked_at"`
+}
+
 func Tokenize(id uuid.UUID, secret_key string) (string, error) {
 	secret_key_byte := []byte(secret_key)
 
@@ -105,6 +110,29 @@ func VerifyRefresh(tokenstring, tokenSecret string) (bool, error) {
 }
 
 /*
+func RevokeToken(tokenstring string) error {
+	dbstructure, err := db.loadDB()
+
+	if err != nil {
+		return err
+	}
+
+	dbstructure.Revocation[tokenstring] = Revoke{
+		Token:      tokenstring,
+		Revoked_at: time.Now().UTC(),
+	}
+
+	err = db.writeDB(dbstructure)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+
 func Hashpassword(passwd string) (string, error) {
 	encrypted, err := bcrypt.GenerateFromPassword([]byte(passwd), bcrypt.DefaultCost)
 	if err != nil {

@@ -12,12 +12,23 @@ import (
 	"github.com/google/uuid"
 )
 
-const createChirp = `-- name: CreateChirp :one
+const countchirps = `-- name: Countchirps :one
+SELECT COUNT(*) FROM chirps WHERE author_id==$1
+`
+
+func (q *Queries) Countchirps(ctx context.Context, authorID uuid.UUID) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countchirps, authorID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const createchirp = `-- name: Createchirp :one
 INSERT INTO chirps(id,body,author_id,created_at,updated_at) VALUES($1,$2,$3,$4,$5)
 RETURNING id, body, author_id, created_at, updated_at
 `
 
-type CreateChirpParams struct {
+type CreatechirpParams struct {
 	ID        int32
 	Body      string
 	AuthorID  uuid.UUID
@@ -25,14 +36,36 @@ type CreateChirpParams struct {
 	UpdatedAt time.Time
 }
 
-func (q *Queries) CreateChirp(ctx context.Context, arg CreateChirpParams) (Chirp, error) {
-	row := q.db.QueryRowContext(ctx, createChirp,
+func (q *Queries) Createchirp(ctx context.Context, arg CreatechirpParams) (Chirp, error) {
+	row := q.db.QueryRowContext(ctx, createchirp,
 		arg.ID,
 		arg.Body,
 		arg.AuthorID,
 		arg.CreatedAt,
 		arg.UpdatedAt,
 	)
+	var i Chirp
+	err := row.Scan(
+		&i.ID,
+		&i.Body,
+		&i.AuthorID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getChirp = `-- name: GetChirp :one
+SELECT id, body, author_id, created_at, updated_at FROM chirps WHERE author_id==$1 AND id==$2
+`
+
+type GetChirpParams struct {
+	AuthorID uuid.UUID
+	ID       int32
+}
+
+func (q *Queries) GetChirp(ctx context.Context, arg GetChirpParams) (Chirp, error) {
+	row := q.db.QueryRowContext(ctx, getChirp, arg.AuthorID, arg.ID)
 	var i Chirp
 	err := row.Scan(
 		&i.ID,

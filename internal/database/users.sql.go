@@ -66,15 +66,16 @@ func (q *Queries) GetUser(ctx context.Context, email string) (User, error) {
 }
 
 const updateUser = `-- name: UpdateUser :one
-UPDATE users SET name=$2 ,Email=$3 ,passwd=$4 WHERE id==$1
+UPDATE users SET name=$2 ,Email=$3 ,passwd=$4 ,updated_at=$5 WHERE id==$1
 RETURNING name, email, passwd, id, created_at, updated_at
 `
 
 type UpdateUserParams struct {
-	ID     uuid.UUID
-	Name   string
-	Email  string
-	Passwd []byte
+	ID        uuid.UUID
+	Name      string
+	Email     string
+	Passwd    []byte
+	UpdatedAt time.Time
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
@@ -83,6 +84,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		arg.Name,
 		arg.Email,
 		arg.Passwd,
+		arg.UpdatedAt,
 	)
 	var i User
 	err := row.Scan(

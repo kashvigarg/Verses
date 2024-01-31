@@ -159,10 +159,11 @@ func (cfg *apiconfig) updateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	updateduser, err := cfg.DB.UpdateUser(r.Context(), database.UpdateUserParams{
-		ID:     userId,
-		Name:   params.Name,
-		Email:  params.Email,
-		Passwd: hashedPasswd,
+		ID:        userId,
+		Name:      params.Name,
+		Email:     params.Email,
+		Passwd:    hashedPasswd,
+		UpdatedAt: time.Now().UTC(),
 	})
 
 	if err != nil {
@@ -244,6 +245,7 @@ func (cfg *apiconfig) verifyRefresh(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+/*
 func (cfg *apiconfig) is_red(w http.ResponseWriter, r *http.Request) {
 	type user_struct struct {
 		User_id int `json:"user_id"`

@@ -57,17 +57,17 @@ func main() {
 	r.Handle("/app", fileconfig)
 	r.Handle("/app/*", fileconfig)
 
-	s.Get("/healthz", apireadiness) /*
-		s.Post("/chirps", apicfg.postChirps)
-		s.Get("/chirps", apicfg.getChirps)
-		s.Get("/chirps/{chirpId}", apicfg.ChirpsbyId)
-		s.Post("/users", apicfg.createUser)
-		s.Post("/login", apicfg.userLogin)
-		s.Post("/refresh", apicfg.verifyRefresh)
-		s.Post("/revoke", apicfg.revokeToken)
-		s.Put("/users", apicfg.updateUser)
-		s.Delete("/chirps/{chirpId}", apicfg.DeleteChirps)
-		s.Post("/polka/webhooks", apicfg.is_red)*/
+	s.Get("/healthz", apireadiness)
+	//	s.Post("/chirps", apicfg.postChirps)
+	//	s.Get("/chirps", apicfg.getChirps)
+	//	s.Get("/chirps/{chirpId}", apicfg.ChirpsbyId)
+	s.Post("/users", apicfg.createUser)
+	s.Post("/login", apicfg.userLogin)
+	//	s.Post("/refresh", apicfg.verifyRefresh)
+	//	s.Post("/revoke", apicfg.revokeToken)
+	s.Put("/users", apicfg.updateUser)
+	//	s.Delete("/chirps/{chirpId}", apicfg.DeleteChirps)
+	//	s.Post("/polka/webhooks", apicfg.is_red)
 	t.Get("/metrics", apicfg.metrics)
 
 	r.Mount("/api", s)
