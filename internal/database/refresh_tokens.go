@@ -37,27 +37,7 @@ func (db *DB) Verifyrevocation(refresh_token string) (bool, error) {
 	return true, nil
 }
 
-func (db *DB) VerifyRefresh(tokenstring, tokenSecret string) (bool, error) {
-	type customClaims struct {
-		jwt.RegisteredClaims
-	}
-	token, err := jwt.ParseWithClaims(tokenstring, &customClaims{}, func(token *jwt.Token) (interface{}, error) { return []byte(tokenSecret), nil })
 
-	if err != nil {
-		return false, errors.New(err.Error()) //"jwt couldn't be parsed"
-	}
-
-	issuer, err := token.Claims.GetIssuer()
-
-	if err != nil {
-		return false, errors.New("issuer couldn't be extracted")
-	}
-
-	if issuer == "chirpy-refresh" {
-		return true, nil
-	}
-	return false, nil
-}
 
 func (db *DB) VerifyRefreshSignature(tokenstring, tokenSecret string) (string, error) {
 	type customClaims struct {

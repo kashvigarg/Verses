@@ -77,14 +77,7 @@ func (db *DB) GetUser(email string, passwd string) (res, error) {
 
 }
 
-func (db *DB) Hashpassword(passwd string) (string, error) {
-	encrypted, err := bcrypt.GenerateFromPassword([]byte(passwd), bcrypt.DefaultCost)
-	if err != nil {
-		return "", errors.New("Couldn't Hash the password")
-	}
 
-	return string(encrypted), nil
-}
 
 func (db *DB) UpdateUser(userid int, userInput User) (res, error) {
 

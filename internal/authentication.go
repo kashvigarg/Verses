@@ -7,16 +7,17 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
-func Tokenize(id string, secret_key string) (string, error) {
+func Tokenize(id uuid.UUID, secret_key string) (string, error) {
 	secret_key_byte := []byte(secret_key)
 
 	claims := &jwt.RegisteredClaims{
 		Issuer:    "chirpy-access",
 		IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
 		ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(time.Duration(60*60) * time.Second)), // 1 hour
-		Subject:   id,
+		Subject:   id.String(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -27,14 +28,14 @@ func Tokenize(id string, secret_key string) (string, error) {
 	return ss, nil
 }
 
-func RefreshToken(id string, secret_key string) (string, error) {
+func RefreshToken(id uuid.UUID, secret_key string) (string, error) {
 	secret_key_byte := []byte(secret_key)
 
 	claims := &jwt.RegisteredClaims{
 		Issuer:    "chirpy-refresh",
 		IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
 		ExpiresAt: jwt.NewNumericDate(time.Now().UTC().AddDate(0, 2, 0)), // 60 days
-		Subject:   id,
+		Subject:   id.String(),
 	}
 
 	refresh_token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -81,8 +82,39 @@ func ValidateToken(tokenstring, tokenSecret string) (string, error) {
 
 	return userId, nil
 }
+func VerifyRefresh(tokenstring, tokenSecret string) (bool, error) {
+	type customClaims struct {
+		jwt.RegisteredClaims
+	}
+	token, err := jwt.ParseWithClaims(tokenstring, &customClaims{}, func(token *jwt.Token) (interface{}, error) { return []byte(tokenSecret), nil })
+
+	if err != nil {
+		return false, errors.New(err.Error()) //"jwt couldn't be parsed"
+	}
+
+	issuer, err := token.Claims.GetIssuer()
+
+	if err != nil {
+		return false, errors.New("issuer couldn't be extracted")
+	}
+
+	if issuer == "chirpy-refresh" {
+		return true, nil
+	}
+	return false, nil
+}
 
 /*
+func Hashpassword(passwd string) (string, error) {
+	encrypted, err := bcrypt.GenerateFromPassword([]byte(passwd), bcrypt.DefaultCost)
+	if err != nil {
+		return "", errors.New("Couldn't Hash the password")
+	}
+
+	return string(encrypted), nil
+}
+
+
 func VerifyAPIkey(headers http.Header) (string, error) {
 
 	key := headers.Get("Authorization")

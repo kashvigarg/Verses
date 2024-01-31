@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -19,6 +18,7 @@ type Input struct {
 type res struct {
 	ID    uuid.UUID `json:"id"`
 	Email string    `json:"email"`
+	Name  string    `json:"name"`
 }
 type res_login struct {
 	Email         string `json:"email"`
@@ -26,15 +26,15 @@ type res_login struct {
 	Refresh_token string `json:"refresh_token"`
 }
 
+type User struct {
+	Name     string `json:"name"`
+	Password []byte `json:"password"`
+	Email    string `json:"email"`
+}
+
 /*
 	type Token struct {
 		Token string `json:"token"`
-	}
-
-	type User struct {
-		Password      []byte `json:"password"`
-		Email         string `json:"email"`
-		Is_chirpy_red bool   `json:"is_chirpy_red"`
 	}
 */
 func (cfg *apiconfig) createUser(w http.ResponseWriter, r *http.Request) {
@@ -90,14 +90,14 @@ func (cfg *apiconfig) userLogin(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusUnauthorized, "Password doesn't match")
 	}
 
-	Token, err := auth.Tokenize(user.ID.String(), cfg.jwtsecret)
+	Token, err := auth.Tokenize(user.ID, cfg.jwtsecret)
 
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, err.Error())
 		return
 	}
 
-	Refresh_token, err := auth.RefreshToken(user.ID.String(), cfg.jwtsecret)
+	Refresh_token, err := auth.RefreshToken(user.ID, cfg.jwtsecret)
 
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, err.Error())
@@ -140,7 +140,7 @@ func (cfg *apiconfig) updateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userId, err := strconv.Atoi(Idstr)
+	userId, err := uuid.FromBytes([]byte(Idstr))
 
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, "user Id couldn't be parsed")
@@ -148,18 +148,22 @@ func (cfg *apiconfig) updateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	decoder := json.NewDecoder(r.Body)
-	params := Input{}
+	params := User{}
 	err = decoder.Decode(&params)
 
-	hashedPasswd, err := cfg.DB.Hashpassword(string(params.Password))
-	params.Password = []byte(hashedPasswd)
+	hashedPasswd, err := bcrypt.GenerateFromPassword([]byte(params.Password), bcrypt.DefaultCost)
 
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, err.Error())
 		return
 	}
 
-	updateduser, err := cfg.DB.UpdateUser(userId, database.User(params))
+	updateduser, err := cfg.DB.UpdateUser(r.Context(), database.UpdateUserParams{
+		ID:     userId,
+		Name:   params.Name,
+		Email:  params.Email,
+		Passwd: hashedPasswd,
+	})
 
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
@@ -167,7 +171,7 @@ func (cfg *apiconfig) updateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondWithJson(w, http.StatusOK, res{
-		ID:    updateduser.ID,
+		Name:  updateduser.Name,
 		Email: updateduser.Email,
 	})
 }
