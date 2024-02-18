@@ -58,9 +58,9 @@ func main() {
 	r.Handle("/app/*", fileconfig)
 
 	s.Get("/healthz", apireadiness)
-	//	s.Post("/chirps", apicfg.postChirps)
-	//	s.Get("/chirps", apicfg.getChirps)
-	//	s.Get("/chirps/{chirpId}", apicfg.ChirpsbyId)
+	s.Post("/chirps", apicfg.postChirps)
+	s.Get("/chirps", apicfg.getChirps)
+	s.Get("/chirps/{chirpId}", apicfg.ChirpsbyId)
 	s.Post("/users", apicfg.createUser)
 	s.Post("/login", apicfg.userLogin)
 	//	s.Post("/refresh", apicfg.verifyRefresh)

@@ -59,7 +59,7 @@ func (cfg *apiconfig) postChirps(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusBadRequest, "Chirp is too long")
 		return
 	}
-	total, err := cfg.DB.Countchirps(r.Context(), authorid_num)
+	total, _ := cfg.DB.Countchirps(r.Context(), authorid_num)
 	content := profane(params.Body)
 
 	chirp, err := cfg.DB.Createchirp(r.Context(), database.CreatechirpParams{

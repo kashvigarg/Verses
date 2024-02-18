@@ -8,10 +8,6 @@ SELECT COUNT(*) FROM chirps WHERE author_id==$1;
 -- name: GetChirp :one
 SELECT * FROM chirps WHERE author_id==$1 AND id==$2;
 
-/*
 -- name: GetChirps :many
-SELECT * FROM chirps WHERE chirps.author_id== users.id
-ORDER BY chirps.id;
-
-
-*/
+SELECT id,body,created_at,updated_at FROM chirps WHERE author_id==$1
+ORDER BY id;
