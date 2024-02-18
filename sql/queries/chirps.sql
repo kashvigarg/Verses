@@ -11,3 +11,6 @@ SELECT * FROM chirps WHERE author_id==$1 AND id==$2;
 -- name: GetChirps :many
 SELECT id,body,created_at,updated_at FROM chirps WHERE author_id==$1
 ORDER BY id;
+
+-- name: DeleteChirp :exec
+DELETE FROM chirps WHERE author_id==$1 AND id==$2;
