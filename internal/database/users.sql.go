@@ -14,7 +14,7 @@ import (
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO users(name,Email,passwd,id,created_at,updated_at) VALUES($1,$2,$3,$4,$5,$6)
-RETURNING name, email, passwd, id, created_at, updated_at
+RETURNING name, email, passwd, id, created_at, updated_at, is_red
 `
 
 type CreateUserParams struct {
@@ -43,12 +43,13 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.ID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.IsRed,
 	)
 	return i, err
 }
 
 const getUser = `-- name: GetUser :one
-SELECT name, email, passwd, id, created_at, updated_at FROM users WHERE Email==$1
+SELECT name, email, passwd, id, created_at, updated_at, is_red FROM users WHERE Email==$1
 `
 
 func (q *Queries) GetUser(ctx context.Context, email string) (User, error) {
@@ -61,13 +62,34 @@ func (q *Queries) GetUser(ctx context.Context, email string) (User, error) {
 		&i.ID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.IsRed,
+	)
+	return i, err
+}
+
+const is_red = `-- name: Is_red :one
+INSERT INTO users(is_red) VALUES($1)
+RETURNING name, email, passwd, id, created_at, updated_at, is_red
+`
+
+func (q *Queries) Is_red(ctx context.Context, isRed bool) (User, error) {
+	row := q.db.QueryRowContext(ctx, is_red, isRed)
+	var i User
+	err := row.Scan(
+		&i.Name,
+		&i.Email,
+		&i.Passwd,
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.IsRed,
 	)
 	return i, err
 }
 
 const updateUser = `-- name: UpdateUser :one
 UPDATE users SET name=$2 ,Email=$3 ,passwd=$4 ,updated_at=$5 WHERE id==$1
-RETURNING name, email, passwd, id, created_at, updated_at
+RETURNING name, email, passwd, id, created_at, updated_at, is_red
 `
 
 type UpdateUserParams struct {
@@ -94,6 +116,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.ID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.IsRed,
 	)
 	return i, err
 }

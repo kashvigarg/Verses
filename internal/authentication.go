@@ -109,6 +109,23 @@ func VerifyRefresh(tokenstring, tokenSecret string) (bool, error) {
 	return false, nil
 }
 
+func VerifyAPIkey(headers http.Header) (string, error) {
+
+	key := headers.Get("Authorization")
+
+	if key == "" {
+		return "", errors.New("API Key not provided")
+	}
+
+	splitToken := strings.Split(key, " ")
+
+	if len(splitToken) < 2 || splitToken[0] != "ApiKey" {
+		return "", errors.New("Auth Header not what expected")
+	}
+
+	return splitToken[1], nil
+}
+
 /*
 func RevokeToken(tokenstring string) error {
 	dbstructure, err := db.loadDB()
@@ -140,23 +157,5 @@ func Hashpassword(passwd string) (string, error) {
 	}
 
 	return string(encrypted), nil
-}
-
-
-func VerifyAPIkey(headers http.Header) (string, error) {
-
-	key := headers.Get("Authorization")
-
-	if key == "" {
-		return "", errors.New("API Key not provided")
-	}
-
-	splitToken := strings.Split(key, " ")
-
-	if len(splitToken) < 2 || splitToken[0] != "ApiKey" {
-		return "", errors.New("Auth Header not what expected")
-	}
-
-	return splitToken[1], nil
 }
 */

@@ -16,9 +16,10 @@ type Input struct {
 	Email    string `json:"email"`
 }
 type res struct {
-	ID    uuid.UUID `json:"id"`
-	Email string    `json:"email"`
-	Name  string    `json:"name"`
+	ID     uuid.UUID `json:"id"`
+	Email  string    `json:"email"`
+	Name   string    `json:"name"`
+	Is_red bool      `json:"is_chirpy_red"`
 }
 type res_login struct {
 	Email         string `json:"email"`
@@ -148,6 +149,11 @@ func (cfg *apiconfig) updateUser(w http.ResponseWriter, r *http.Request) {
 	params := User{}
 	err = decoder.Decode(&params)
 
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "couldn't decode parameters")
+		return
+	}
+
 	hashedPasswd, err := bcrypt.GenerateFromPassword([]byte(params.Password), bcrypt.DefaultCost)
 
 	if err != nil {
@@ -258,10 +264,9 @@ func (cfg *apiconfig) verifyRefresh(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-/*
 func (cfg *apiconfig) is_red(w http.ResponseWriter, r *http.Request) {
 	type user_struct struct {
-		User_id int `json:"user_id"`
+		User_id uuid.UUID `json:"user_id"`
 	}
 	type body struct {
 		Event string      `json:"event"`
@@ -289,18 +294,18 @@ func (cfg *apiconfig) is_red(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if params.Event == "user.upgraded" {
-		user_res, err := cfg.DB.Is_red(params.Data.User_id)
+		user_res, err := cfg.DB.Is_red(r.Context(), true)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 		respondWithJson(w, http.StatusOK, res{
-			Email:         user_res.Email,
-			Is_chirpy_red: user_res.Is_chirpy_red,
-			ID:            params.Data.User_id,
+			Name:   user_res.Name,
+			Email:  user_res.Email,
+			Is_red: user_res.IsRed,
+			ID:     params.Data.User_id,
 		})
 	}
 
 	respondWithJson(w, http.StatusOK, "http request accepted in the webhook")
 }
-*/

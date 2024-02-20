@@ -8,3 +8,7 @@ RETURNING *;
 
 -- name: GetUser :one
 SELECT * FROM users WHERE Email==$1;
+
+-- name: Is_red :one
+INSERT INTO users(is_red) VALUES($1)
+RETURNING *;

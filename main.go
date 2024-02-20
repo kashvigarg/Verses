@@ -63,11 +63,11 @@ func main() {
 	s.Get("/chirps/{chirpId}", apicfg.ChirpsbyId)
 	s.Post("/users", apicfg.createUser)
 	s.Post("/login", apicfg.userLogin)
-	//	s.Post("/refresh", apicfg.verifyRefresh)
+	s.Post("/refresh", apicfg.verifyRefresh)
 	s.Post("/revoke", apicfg.revokeToken)
 	s.Put("/users", apicfg.updateUser)
 	s.Delete("/chirps/{chirpId}", apicfg.DeleteChirps)
-	//	s.Post("/polka/webhooks", apicfg.is_red)
+	s.Post("/polka/webhooks", apicfg.is_red)
 	t.Get("/metrics", apicfg.metrics)
 
 	r.Mount("/api", s)
