@@ -18,6 +18,11 @@ type Chirp struct {
 	UpdatedAt time.Time
 }
 
+type Revocation struct {
+	Token     []byte
+	RevokedAt time.Time
+}
+
 type User struct {
 	Name      string
 	Email     string

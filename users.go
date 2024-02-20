@@ -25,18 +25,15 @@ type res_login struct {
 	Token         string `json:"token"`
 	Refresh_token string `json:"refresh_token"`
 }
-
 type User struct {
 	Name     string `json:"name"`
 	Password []byte `json:"password"`
 	Email    string `json:"email"`
 }
+type Token struct {
+	Token string `json:"token"`
+}
 
-/*
-	type Token struct {
-		Token string `json:"token"`
-	}
-*/
 func (cfg *apiconfig) createUser(w http.ResponseWriter, r *http.Request) {
 
 	decoder := json.NewDecoder(r.Body)
@@ -47,7 +44,7 @@ func (cfg *apiconfig) createUser(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, "couldn't decode parameters")
 		return
 	}
-	encrypted, err := bcrypt.GenerateFromPassword([]byte(params.Password), bcrypt.DefaultCost)
+	encrypted, _ := bcrypt.GenerateFromPassword([]byte(params.Password), bcrypt.DefaultCost)
 
 	user, err := cfg.DB.CreateUser(r.Context(), database.CreateUserParams{
 		Email:     params.Email,
@@ -128,7 +125,7 @@ func (cfg *apiconfig) updateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if is_refresh == true {
+	if is_refresh {
 		respondWithError(w, http.StatusUnauthorized, "Header contains refresh token")
 		return
 	}
@@ -177,31 +174,34 @@ func (cfg *apiconfig) updateUser(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-/*
 func (cfg *apiconfig) revokeToken(w http.ResponseWriter, r *http.Request) {
-	decoder := json.NewDecoder(r.Body)
-	params := User{}
-	err := decoder.Decode(&params)
+	/*
+		decoder := json.NewDecoder(r.Body)
+		params := User{}
+		err := decoder.Decode(&params)
 
-	if err != io.EOF {
-		respondWithError(w, http.StatusUnauthorized, "Body is provided")
-		return
-	}
-
+		if err != io.EOF {
+			respondWithError(w, http.StatusUnauthorized, "Body is provided")
+			return
+		}
+	*/
 	token, err := auth.BearerHeader(r.Header)
 
 	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, err.Error())
+		respondWithError(w, http.StatusInternalServerError, "bytes couldn't be converted")
 		return
 	}
 
-	err = cfg.DB.RevokeToken(token)
+	err = cfg.DB.RevokeToken(r.Context(), database.RevokeTokenParams{
+		Token:     []byte(token),
+		RevokedAt: time.Now().UTC(),
+	})
 
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, err.Error())
 	}
 
-	respondWithJson(w, http.StatusOK, res{})
+	respondWithJson(w, http.StatusOK, "Token Revoked")
 }
 
 func (cfg *apiconfig) verifyRefresh(w http.ResponseWriter, r *http.Request) {
@@ -213,26 +213,39 @@ func (cfg *apiconfig) verifyRefresh(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	Idstr, err := cfg.DB.VerifyRefreshSignature(token, cfg.jwtsecret)
-
-	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, err.Error())
-		return
-	}
-	userid, err := strconv.Atoi(Idstr)
-
-	is_revoked, err := cfg.DB.Verifyrevocation(token)
+	is_refresh, err := auth.VerifyRefresh(token, cfg.jwtsecret)
 
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, err.Error())
 		return
 	}
 
-	if is_revoked == true {
+	if !is_refresh {
+		respondWithError(w, http.StatusUnauthorized, "Header doesn't contain refresh token")
+		return
+	}
+
+	is_revoked, err := cfg.DB.VerifyRefresh(r.Context(), []byte(token))
+
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+
+	if is_revoked {
 		respondWithError(w, http.StatusUnauthorized, "Refresh Token revoked")
 		return
 	}
-
+	Idstr, err := auth.ValidateToken(token, cfg.jwtsecret)
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+	userid, err := uuid.FromBytes([]byte(Idstr))
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, "user Id couldn't be parsed")
+		return
+	}
 	auth_token, err := auth.Tokenize(userid, cfg.jwtsecret)
 
 	if err != nil {
