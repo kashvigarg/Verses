@@ -1,4 +1,4 @@
 FROM debian:stable-slim
-COPY out /bin/out
+COPY Barkin /bin/Barkin
 ENV PORT 8000
-CMD ["/bin/out"]
+CMD ["/bin/Barkin"]

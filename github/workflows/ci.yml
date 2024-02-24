@@ -1,0 +1,53 @@
+name: ci
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  tests:
+    name: Security Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set Up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.21
+      
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Install gosec
+        run: go install github.com/securego/gosec/v2/cmd/gosec@latest
+
+      - name: Run gosec
+        run: gosec ./...
+
+  styles:
+    name: formatting tests
+    runs-on: ubuntu-latest
+
+
+    steps:
+      - name: Set Up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.21
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Run formatting tests
+        run: test -z $(go fmt ./...)
+
+      - name: Install staticcheck
+        run: go install honnef.co/go/tools/cmd/staticcheck@latest
+
+      - name: Run staticcheck
+        run: staticcheck ./...
