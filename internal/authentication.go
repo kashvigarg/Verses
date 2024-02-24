@@ -120,7 +120,7 @@ func VerifyAPIkey(headers http.Header) (string, error) {
 	splitToken := strings.Split(key, " ")
 
 	if len(splitToken) < 2 || splitToken[0] != "ApiKey" {
-		return "", errors.New("Auth Header not what expected")
+		return "", errors.New("auth header not what expected")
 	}
 
 	return splitToken[1], nil
