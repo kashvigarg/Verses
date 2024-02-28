@@ -19,7 +19,7 @@ func Tokenize(id uuid.UUID, secret_key string) (string, error) {
 	secret_key_byte := []byte(secret_key)
 
 	claims := &jwt.RegisteredClaims{
-		Issuer:    "chirpy-access",
+		Issuer:    "Bark-access",
 		IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
 		ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(time.Duration(60*60) * time.Second)), // 1 hour
 		Subject:   id.String(),
@@ -37,7 +37,7 @@ func RefreshToken(id uuid.UUID, secret_key string) (string, error) {
 	secret_key_byte := []byte(secret_key)
 
 	claims := &jwt.RegisteredClaims{
-		Issuer:    "chirpy-refresh",
+		Issuer:    "Bark-refresh",
 		IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
 		ExpiresAt: jwt.NewNumericDate(time.Now().UTC().AddDate(0, 2, 0)), // 60 days
 		Subject:   id.String(),
@@ -57,13 +57,13 @@ func BearerHeader(headers http.Header) (string, error) {
 	token := headers.Get("Authorization")
 
 	if token == "" {
-		return "", errors.New("Auth header not found")
+		return "", errors.New("auth header not found")
 	}
 
 	splitToken := strings.Split(token, " ")
 
 	if len(splitToken) < 2 || splitToken[0] != "Bearer" {
-		return "", errors.New("Auth Header not what expected")
+		return "", errors.New("auth header not what expected")
 	}
 
 	return splitToken[1], nil
@@ -82,7 +82,7 @@ func ValidateToken(tokenstring, tokenSecret string) (string, error) {
 	userId, err := token.Claims.GetSubject()
 
 	if err != nil {
-		return "", errors.New("User id couldn't be extracted")
+		return "", errors.New("user id couldn't be extracted")
 	}
 
 	return userId, nil
@@ -103,7 +103,7 @@ func VerifyRefresh(tokenstring, tokenSecret string) (bool, error) {
 		return false, errors.New("issuer couldn't be extracted")
 	}
 
-	if issuer == "chirpy-refresh" {
+	if issuer == "Bark-refresh" {
 		return true, nil
 	}
 	return false, nil
