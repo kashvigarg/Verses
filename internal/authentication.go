@@ -126,6 +126,8 @@ func VerifyAPIkey(headers http.Header) (string, error) {
 	return splitToken[1], nil
 }
 
+
+
 /*
 func RevokeToken(tokenstring string) error {
 	dbstructure, err := db.loadDB()
