@@ -41,7 +41,7 @@ func (cfg *apiconfig) postChirps(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authorid_num, err := uuid.FromBytes([]byte(authorid))
+	authorid_num, err := uuid.Parse(authorid)
 
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "bytes couldn't be converted")
@@ -100,7 +100,7 @@ func (cfg *apiconfig) DeleteChirps(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authorid_num, err := uuid.FromBytes([]byte(authorid))
+	authorid_num, err := uuid.Parse(authorid)
 
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "bytes couldn't be converted")

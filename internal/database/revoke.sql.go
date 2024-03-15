@@ -26,7 +26,7 @@ func (q *Queries) RevokeToken(ctx context.Context, arg RevokeTokenParams) error 
 
 const verifyRefresh = `-- name: VerifyRefresh :one
 SELECT EXISTS (
-    SELECT 1 FROM revocation WHERE token ==$1
+    SELECT 1 FROM revocation WHERE token=$1
 ) AS value_exists
 `
 

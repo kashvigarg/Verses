@@ -13,7 +13,7 @@ import (
 )
 
 const countchirps = `-- name: Countchirps :one
-SELECT COUNT(*) FROM chirps WHERE author_id==$1
+SELECT COUNT(*) FROM chirps WHERE author_id=$1
 `
 
 func (q *Queries) Countchirps(ctx context.Context, authorID uuid.UUID) (int64, error) {
@@ -56,7 +56,7 @@ func (q *Queries) Createchirp(ctx context.Context, arg CreatechirpParams) (Chirp
 }
 
 const deleteChirp = `-- name: DeleteChirp :exec
-DELETE FROM chirps WHERE author_id==$1 AND id==$2
+DELETE FROM chirps WHERE author_id=$1 AND id=$2
 `
 
 type DeleteChirpParams struct {
@@ -70,7 +70,7 @@ func (q *Queries) DeleteChirp(ctx context.Context, arg DeleteChirpParams) error 
 }
 
 const getChirp = `-- name: GetChirp :one
-SELECT id, body, author_id, created_at, updated_at FROM chirps WHERE author_id==$1 AND id==$2
+SELECT id, body, author_id, created_at, updated_at FROM chirps WHERE author_id=$1 AND id=$2
 `
 
 type GetChirpParams struct {
@@ -92,7 +92,7 @@ func (q *Queries) GetChirp(ctx context.Context, arg GetChirpParams) (Chirp, erro
 }
 
 const getChirps = `-- name: GetChirps :many
-SELECT id,body,created_at,updated_at FROM chirps WHERE author_id==$1
+SELECT id,body,created_at,updated_at FROM chirps WHERE author_id=$1
 ORDER BY id
 `
 

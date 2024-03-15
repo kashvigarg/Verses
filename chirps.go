@@ -33,7 +33,7 @@ func (cfg *apiconfig) getChirps(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authorid_num, err := uuid.FromBytes([]byte(authorid))
+	authorid_num, err := uuid.Parse(authorid)
 
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "bytes couldn't be converted")
@@ -102,7 +102,7 @@ func (cfg *apiconfig) ChirpsbyId(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authorid_num, err := uuid.FromBytes([]byte(authorid))
+	authorid_num, err := uuid.Parse(authorid)
 
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "bytes couldn't be converted")

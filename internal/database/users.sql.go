@@ -49,7 +49,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 }
 
 const getUser = `-- name: GetUser :one
-SELECT name, email, passwd, id, created_at, updated_at, is_red FROM users WHERE Email==$1
+SELECT name, email, passwd, id, created_at, updated_at, is_red FROM users WHERE Email=$1
 `
 
 func (q *Queries) GetUser(ctx context.Context, email string) (User, error) {
@@ -88,7 +88,7 @@ func (q *Queries) Is_red(ctx context.Context, isRed bool) (User, error) {
 }
 
 const updateUser = `-- name: UpdateUser :one
-UPDATE users SET name=$2 ,Email=$3 ,passwd=$4 ,updated_at=$5 WHERE id==$1
+UPDATE users SET name=$2 ,Email=$3 ,passwd=$4 ,updated_at=$5 WHERE id=$1
 RETURNING name, email, passwd, id, created_at, updated_at, is_red
 `
 

@@ -28,7 +28,7 @@ type res_login struct {
 }
 type User struct {
 	Name     string `json:"name"`
-	Password []byte `json:"password"`
+	Password string `json:"password"`
 	Email    string `json:"email"`
 }
 type Token struct {
@@ -38,7 +38,7 @@ type Token struct {
 func (cfg *apiconfig) createUser(w http.ResponseWriter, r *http.Request) {
 
 	decoder := json.NewDecoder(r.Body)
-	params := Input{}
+	params := User{}
 	err := decoder.Decode(&params)
 
 	if err != nil {
@@ -48,21 +48,24 @@ func (cfg *apiconfig) createUser(w http.ResponseWriter, r *http.Request) {
 	encrypted, _ := bcrypt.GenerateFromPassword([]byte(params.Password), bcrypt.DefaultCost)
 
 	user, err := cfg.DB.CreateUser(r.Context(), database.CreateUserParams{
+		Name:      params.Name,
 		Email:     params.Email,
 		Passwd:    encrypted,
-		ID:        uuid.UUID{},
+		ID:        uuid.New(),
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
 	})
 
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "couldn't create user")
+		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	respondWithJson(w, http.StatusCreated, res{
-		Email: user.Email,
-		ID:    user.ID,
+		Email:  user.Email,
+		ID:     user.ID,
+		Name:   user.Name,
+		Is_red: user.IsRed,
 	})
 }
 
@@ -79,7 +82,7 @@ func (cfg *apiconfig) userLogin(w http.ResponseWriter, r *http.Request) {
 	user, err := cfg.DB.GetUser(r.Context(), params.Email)
 
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "user not found")
+		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 	err = bcrypt.CompareHashAndPassword(user.Passwd, []byte(params.Password))
@@ -138,10 +141,12 @@ func (cfg *apiconfig) updateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userId, err := uuid.FromBytes([]byte(Idstr))
+	//userId, err := uuid.FromBytes([]byte(Idstr))
+
+	userId, err := uuid.Parse(Idstr)
 
 	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, "user Id couldn't be parsed")
+		respondWithError(w, http.StatusUnauthorized, err.Error())
 		return
 	}
 
@@ -247,7 +252,7 @@ func (cfg *apiconfig) verifyRefresh(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusUnauthorized, err.Error())
 		return
 	}
-	userid, err := uuid.FromBytes([]byte(Idstr))
+	userid, err := uuid.Parse(Idstr)
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, "user Id couldn't be parsed")
 		return
