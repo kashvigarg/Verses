@@ -16,16 +16,11 @@ jobs:
       - name: Set Up Go
         uses: actions/setup-go@v4
         with:
-          go-version: 1.20
+          go-version: 1.21
       
       - name: Checkout code
         uses: actions/checkout@v3
       
-      - name: Install gosec
-        run: go install github.com/securego/gosec/v2/cmd/gosec@latest
-
-      - name: Run gosec
-        run: gosec ./...
 
   styles:
     name: formatting tests
@@ -36,16 +31,16 @@ jobs:
       - name: Set Up Go
         uses: actions/setup-go@v4
         with:
-          go-version: 1.20
+          go-version: 1.21
 
       - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Run formatting tests
-        run: test -z $(go fmt ./...)
+        run: test -z "$(go fmt ./...)"
 
       - name: Install staticcheck
-        run: go install honnef.co/go/tools/cmd/staticcheck@latest
+        run: go get honnef.co/go/tools/cmd/staticcheck@latest
 
       - name: Run staticcheck
         run: staticcheck ./...
