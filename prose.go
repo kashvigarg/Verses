@@ -11,14 +11,14 @@ import (
 	"github.com/jaydee029/Barkin/internal/database"
 )
 
-type Chirp struct {
+type Prose struct {
 	Id         int       `json:"id"`
 	Body       string    `json:"body"`
 	Created_at time.Time `json:"created_at"`
 	Updated_at time.Time `json:"updated_at"`
 }
 
-func (cfg *apiconfig) getChirps(w http.ResponseWriter, r *http.Request) {
+func (cfg *apiconfig) getProse(w http.ResponseWriter, r *http.Request) {
 	token, err := auth.BearerHeader(r.Header)
 
 	if err != nil {
@@ -43,7 +43,7 @@ func (cfg *apiconfig) getChirps(w http.ResponseWriter, r *http.Request) {
 	chirps, err := cfg.DB.GetChirps(r.Context(), authorid_num)
 
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Chirps couldn't be fetched")
+		respondWithError(w, http.StatusInternalServerError, "Prose couldn't be fetched")
 		return
 	}
 	/*
@@ -87,7 +87,7 @@ func (cfg *apiconfig) getChirps(w http.ResponseWriter, r *http.Request) {
 	respondWithJson(w, http.StatusOK, chirps)
 }
 
-func (cfg *apiconfig) ChirpsbyId(w http.ResponseWriter, r *http.Request) {
+func (cfg *apiconfig) ProsebyId(w http.ResponseWriter, r *http.Request) {
 	token, err := auth.BearerHeader(r.Header)
 
 	if err != nil {
@@ -109,7 +109,7 @@ func (cfg *apiconfig) ChirpsbyId(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	chirpidstr := chi.URLParam(r, "chirpId")
+	chirpidstr := chi.URLParam(r, "proseId")
 	chirpid, err := strconv.Atoi(chirpidstr)
 
 	if err != nil {
@@ -123,11 +123,11 @@ func (cfg *apiconfig) ChirpsbyId(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Chirp couldn't be fetched")
+		respondWithError(w, http.StatusInternalServerError, "Prose couldn't be fetched")
 		return
 	}
 
-	respondWithJson(w, http.StatusOK, Chirp{
+	respondWithJson(w, http.StatusOK, Prose{
 		Id:         int(chirp.ID),
 		Body:       chirp.Body,
 		Created_at: chirp.CreatedAt,

@@ -1,5 +1,8 @@
-FROM debian:stable-slim
-COPY Barkin /bin/Barkin
-ENV PORT 8000
-CMD ["/bin/Barkin"]
+FROM --platform=linux/amd64 debian:stable-slim
+
+RUN apt-get update && apt-get install -y ca-certificates
+
+ADD Barkin /usr/bin/Barkin
+
+CMD ["Barkin"]
 

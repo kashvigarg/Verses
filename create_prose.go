@@ -25,7 +25,7 @@ type body struct {
 	Body string `json:"body"`
 }
 
-func (cfg *apiconfig) postChirps(w http.ResponseWriter, r *http.Request) {
+func (cfg *apiconfig) postProse(w http.ResponseWriter, r *http.Request) {
 
 	token, err := auth.BearerHeader(r.Header)
 
@@ -58,7 +58,7 @@ func (cfg *apiconfig) postChirps(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(params.Body) > 140 {
-		respondWithError(w, http.StatusBadRequest, "Chirp is too long")
+		respondWithError(w, http.StatusBadRequest, "Prose is too long")
 		return
 	}
 	total, _ := cfg.DB.Countchirps(r.Context(), authorid_num)
@@ -73,7 +73,7 @@ func (cfg *apiconfig) postChirps(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "couldn't create chirp")
+		respondWithError(w, http.StatusInternalServerError, "couldn't create Prose")
 		return
 	}
 
@@ -85,7 +85,7 @@ func (cfg *apiconfig) postChirps(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (cfg *apiconfig) DeleteChirps(w http.ResponseWriter, r *http.Request) {
+func (cfg *apiconfig) DeleteProse(w http.ResponseWriter, r *http.Request) {
 	token, err := auth.BearerHeader(r.Header)
 
 	if err != nil {
@@ -107,10 +107,10 @@ func (cfg *apiconfig) DeleteChirps(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	chirpidstr := chi.URLParam(r, "chirpId")
+	chirpidstr := chi.URLParam(r, "proseId")
 	chirpid, err := strconv.Atoi(chirpidstr)
 	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "couldn't parse chirp id")
+		respondWithError(w, http.StatusBadRequest, "couldn't parse prose id")
 		return
 	}
 
@@ -124,7 +124,7 @@ func (cfg *apiconfig) DeleteChirps(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondWithJson(w, http.StatusOK, "Chirp deleted")
+	respondWithJson(w, http.StatusOK, "Prose deleted")
 }
 
 func profane(content string) string {

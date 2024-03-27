@@ -12,8 +12,8 @@ func (cfg *apiconfig) metrics(w http.ResponseWriter, r *http.Request) {
 <html>
 
 <body>
-	<h1>Welcome, Chirpy Admin</h1>
-	<p>Chirpy has been visited %d times!</p>
+	<h1>Welcome, Verses Admin</h1>
+	<p>Verses has been visited %d times!</p>
 </body>
 
 </html>
