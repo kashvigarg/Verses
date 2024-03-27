@@ -1,4 +1,4 @@
-module github.com/jaydee029/Barkin
+module github.com/jaydee029/Verses
 
 go 1.20
 

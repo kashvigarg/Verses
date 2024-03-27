@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	auth "github.com/jaydee029/Barkin/internal"
-	"github.com/jaydee029/Barkin/internal/database"
+	auth "github.com/jaydee029/Verses/internal"
+	"github.com/jaydee029/Verses/internal/database"
 	"golang.org/x/crypto/bcrypt"
 )
 

@@ -10,7 +10,7 @@ import (
 	_ "github.com/lib/pq"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/jaydee029/Barkin/internal/database"
+	"github.com/jaydee029/Verses/internal/database"
 	"github.com/joho/godotenv"
 )
 
@@ -22,8 +22,12 @@ type apiconfig struct {
 }
 
 func main() {
-	godotenv.Load(".env")
-
+	err := godotenv.Load(".env")
+	/*
+		if err != nil {
+			log.Fatal(".env file not provided")
+		}
+	*/
 	jwt_secret := os.Getenv("JWT_SECRET")
 	if jwt_secret == "" {
 		log.Fatal("JWT secret key not set")
