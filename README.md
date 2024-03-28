@@ -8,56 +8,74 @@ A social media Backend APi
 ### Endpoints
 
 - #### User Management
-   - #### Create User `POST ``/users`
-      Description: Create a new user account.
+   - #### Create User `POST ` `/users`
+     Description: Create a new user account.
      
-      Request Body:
+     Request Body:
+     ```json
+     {
+         "Name": "name",
+         "Password": "password",
+         "Email": "email"
+     }
+     ```
 
-      {
-	"Name": "name"
-	"Password":"password"
-	"Email":"email"
-}
+     Response:
+      ```json
+     {
+         "id": "UUID",
+         "email": "string",
+         "name": "string",
+         "is_gold": "bool"
+     }
+     ```
      
-      Response:
-     
-      Status Code: 201 Created
-     
-     Response Body: User object (JSON)
+     Status Code: 201 Created
    - #### User Login `POST` `/login`
      Description: Authenticate a user and generate access and refresh tokens.
 
      Request Body:
-     
-     username (string, required): User's username.
-     
-     password (string, required): User's password.
+      ```json
+     {
+      "password": "string",
+      "email": "string"
+      }
+      ```
      
      Response:
-     
+      ```json
+     {
+       "Email": "email",
+       "Token": "Token",
+       "Refresh_token": "Refresh_token"
+      }
+      ```
      Status Code: 200 OK
-     
-     Response Body: Access and refresh tokens (JSON)
    - #### Refresh Token `POST` `/refresh`
      Description: Refresh the access token using the refresh token.
      
      Request Body:
      
-     refresh_token (string, required): Refresh token.
+     Header: `Bearer "refresh_token"`
      
      Response:
-     
+     ```json
+     {
+       Token: "auth_token"
+      }
+     ```
      Status Code: 200 OK
-  
-     Response Body: New access token (JSON)
+
   - #### Revoke Token `POST` `/revoke`
     Description: Revoke the refresh token.
     
     Request Body:
     
-    refresh_token (string, required): Refresh token to revoke.
+    Header: `Bearer "reresh_token"`
     
     Response:
+    
+    `"Token Revoked"`
     
     Status Code: 204 No Content
   - #### Update User `PUT` `/users` 
@@ -65,47 +83,100 @@ A social media Backend APi
     
     Request Body:
     
-    Updated user data (JSON)
+    Header : `Bearer "auth_token"`
+    
+    ```json
+     {
+         "Name": "name",
+         "Password": "password",
+         "Email": "email"
+     }
+     ```
     
     Response:
+    ```json
+     {
+         "id": "",
+         "email": "string",
+         "name": "string",
+         "is_gold": ""
+     }
+     ```
     
     Status Code: 200 OK
-    
-    Response Body: Updated user object (JSON)
 - #### Prose Management
   - #### Create Prose `POST` `/prose`
     Description: Create a new prose (post).
     
     Request Body:
-    
-    content (string, required): Text content of the prose.
+    Header: `Bearer "auth_token"`
+    ```json
+    {
+      Body string `json:"body"`
+     }
+    ```
     
     Response:
-    
+    ```json
+    {
+    	ID:         "ID",
+	Body:       "Body",
+	Created_at: "CreatedAt",
+	Updated_at: "UpdatedAt"
+	}
+    ```
     Status Code: 201 Created
-    
-    Response Body: Prose object (JSON)
+
   - #### Get Prose `GET` `/prose`
     Description: Get a list of prose.
+ 
+    Request Body:
+    
+    Header: `Bearer "auth_token"`
     
     Response:
-    
+    ```json
+    [
+     {
+	ID: "uuid"
+	Body: "string"    
+	CreatedAt: "time"
+	UpdatedAt: "time"
+     },
+    ]
+    ```
+
     Status Code: 200 OK
-    
-    Response Body: List of prose objects (JSON)
+
   - #### Get Prose by ID `GET` `/prose/{proseId}`
     Description: Get details of a prose by its ID.
     
+    Request Body:
+ 
+    Header: `Bearer "auth_token"`
+    
     Response:
+       ```json
+    {
+	ID: "uuid"
+	Body: "string"    
+	CreatedAt: "time"
+	UpdatedAt: "time"
+     }
+    ```
     
     Status Code: 200 OK
-    
-    Response Body: Prose object (JSON)
   - #### Delete Prose ` DELETE` `/prose/{proseId}`
     Description: Delete a prose by its ID.
-
+ 
+    Request Body:
+ 
+    Header: `Bearer "auth_token"`
+    
     Response:
-
+    
+    `" Prose Deleted"`
+    
     Status Code: 204 No Content
 - #### Administrative Tasks
   - #### Gold Webhooks `POST` `/gold/webhooks`
@@ -119,18 +190,6 @@ A social media Backend APi
   - #### Metrics `GET` `/metrics`
     Description: Retrieve server metrics.
 
-    Response:
-
-    Status Code: 200 OK
-
-    Response Body: Metrics data (JSON)
-
   - #### Health Check `GET` `/healthz`
     Description: Check the health status of the API.
-
-    Response:
-
-    Status Code: 200 OK
-    
-    Response Body: "OK" (string)
 
