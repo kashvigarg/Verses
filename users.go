@@ -269,7 +269,7 @@ func (cfg *apiconfig) verifyRefresh(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (cfg *apiconfig) is_red(w http.ResponseWriter, r *http.Request) {
+func (cfg *apiconfig) is_gold(w http.ResponseWriter, r *http.Request) {
 	type user_struct struct {
 		User_id uuid.UUID `json:"user_id"`
 	}

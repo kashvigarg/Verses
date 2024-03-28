@@ -67,7 +67,7 @@ func main() {
 	s.Post("/revoke", apicfg.revokeToken)
 	s.Put("/users", apicfg.updateUser)
 	s.Delete("/prose/{proseId}", apicfg.DeleteProse)
-	s.Post("/gold/webhooks", apicfg.is_red)
+	s.Post("/gold/webhooks", apicfg.is_gold)
 	t.Get("/metrics", apicfg.metrics)
 
 	r.Mount("/api", s)
