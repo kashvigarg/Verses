@@ -22,12 +22,8 @@ type apiconfig struct {
 }
 
 func main() {
-	err := godotenv.Load(".env")
-	/*
-		if err != nil {
-			log.Fatal(".env file not provided")
-		}
-	*/
+	godotenv.Load(".env")
+
 	jwt_secret := os.Getenv("JWT_SECRET")
 	if jwt_secret == "" {
 		log.Fatal("JWT secret key not set")
@@ -47,7 +43,7 @@ func main() {
 	apicfg := apiconfig{
 		fileservercounts: 0,
 		jwtsecret:        jwt_secret,
-		apiKey:           os.Getenv("POLKA_KEY"),
+		apiKey:           os.Getenv("GOLD_KEY"),
 		DB:               queries,
 	}
 
@@ -62,16 +58,16 @@ func main() {
 	r.Handle("/app/*", fileconfig)
 
 	s.Get("/healthz", apireadiness)
-	s.Post("/chirps", apicfg.postProse)
-	s.Get("/chirps", apicfg.getProse)
-	s.Get("/chirps/{chirpId}", apicfg.ProsebyId)
+	s.Post("/prose", apicfg.postProse)
+	s.Get("/prose", apicfg.getProse)
+	s.Get("/prose/{proseId}", apicfg.ProsebyId)
 	s.Post("/users", apicfg.createUser)
 	s.Post("/login", apicfg.userLogin)
 	s.Post("/refresh", apicfg.verifyRefresh)
 	s.Post("/revoke", apicfg.revokeToken)
 	s.Put("/users", apicfg.updateUser)
-	s.Delete("/chirps/{chirpId}", apicfg.DeleteProse)
-	s.Post("/polka/webhooks", apicfg.is_red)
+	s.Delete("/prose/{proseId}", apicfg.DeleteProse)
+	s.Post("/gold/webhooks", apicfg.is_red)
 	t.Get("/metrics", apicfg.metrics)
 
 	r.Mount("/api", s)
