@@ -2,7 +2,9 @@ package main
 
 import (
 	"database/sql"
+	"embed"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -20,6 +22,9 @@ type apiconfig struct {
 	apiKey           string
 	DB               *database.Queries
 }
+
+//go:embed static/*
+var staticFiles embed.FS
 
 func main() {
 	godotenv.Load(".env")
@@ -53,9 +58,22 @@ func main() {
 	s := chi.NewRouter()
 	t := chi.NewRouter()
 
-	fileconfig := apicfg.reqcounts(http.StripPrefix("/app", http.FileServer(http.Dir("."))))
+	fileconfig := apicfg.reqcounts(http.StripPrefix("/app", http.StripPrefix("/app", http.FileServer(http.Dir("./index.html")))))
 	r.Handle("/app", fileconfig)
 	r.Handle("/app/*", fileconfig)
+
+	r.Get("/app", func(w http.ResponseWriter, r *http.Request) {
+		file, err := staticFiles.Open("static/index.html")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer file.Close()
+		//w.Write(file)
+		if _, err := io.Copy(w, file); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	})
 
 	s.Get("/healthz", apireadiness)
 	s.Post("/prose", apicfg.postProse)
