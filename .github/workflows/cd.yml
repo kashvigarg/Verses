@@ -4,6 +4,12 @@ on:
   workflow_dispatch:
   pull_request:
     branches: [main]
+env:
+  AWS_REGION: ap-south-1
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  PRIVATE_SSH_KEY: ${{ secrets.PRIVATE_SSH_KEY }}
+  SERVER_PUBLIC_IP: ${{ secrets.SERVER_PUBLIC_IP }}
 
 jobs:
     deploy:
@@ -54,6 +60,7 @@ jobs:
                 host: ${{ secrets.SERVER_PUBLIC_IP }}
                 username: ubuntu
                 key: ${{ secrets.PRIVATE_SSH_KEY }}
+                envs: PRIVATE_SSH_KEY,REGISTRY,REPOSITORY,IMAGE_TAG,AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,AWS_DEFAULT_REGION,AWS_REGION
                 script: |-
                   sudo apt update
                   sudo apt install docker.io -y
