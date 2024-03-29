@@ -69,6 +69,6 @@ jobs:
                   sudo docker stop deploy || true
                   sudo docker rm deploy || true
                   sudo docker pull $REGISTRY/$REPOSITORY:$IMAGE_TAG
-                  sudo docker run -d -e PORT=8100 -e JWT_SECRET=fbd88e -e GOLD_KEY=nfjd878 -e DB_CONN=dgddbujdb --name deploy -p 8100:8100 $REGISTRY/$REPOSITORY:$IMAGE_TAG
+                  sudo docker run -d -e PORT=80 -e JWT_SECRET=fbd88e -e GOLD_KEY=nfjd878 -e DB_CONN=dgddbujdb --name deploy -p 80:80 $REGISTRY/$REPOSITORY:$IMAGE_TAG
                   
             
