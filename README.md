@@ -61,7 +61,7 @@ A social media Backend APi
      Response:
      ```json
      {
-       Token: "auth_token"
+       "Token": "auth_token"
       }
      ```
      Status Code: 200 OK
@@ -112,17 +112,17 @@ A social media Backend APi
     Header: `Bearer "auth_token"`
     ```json
     {
-      Body string `json:"body"`
+      "Body":"body"
      }
     ```
     
     Response:
     ```json
     {
-    	ID:         "ID",
-	Body:       "Body",
-	Created_at: "CreatedAt",
-	Updated_at: "UpdatedAt"
+     "ID":       "uuid",
+	"Body":     "string",
+	"Created_at":"time",
+	"Updated_at":"time"
 	}
     ```
     Status Code: 201 Created
@@ -138,10 +138,10 @@ A social media Backend APi
     ```json
     [
      {
-	ID: "uuid"
-	Body: "string"    
-	CreatedAt: "time"
-	UpdatedAt: "time"
+	"ID": "uuid"
+	"Body": "string"    
+	"CreatedAt": "time"
+	"UpdatedAt": "time"
      },
     ]
     ```
@@ -158,10 +158,10 @@ A social media Backend APi
     Response:
        ```json
     {
-	ID: "uuid"
-	Body: "string"    
-	CreatedAt: "time"
-	UpdatedAt: "time"
+	"ID": "uuid"
+	"Body": "string"    
+	"CreatedAt": "time"
+	"UpdatedAt": "time"
      }
     ```
     
@@ -182,7 +182,7 @@ A social media Backend APi
   - #### Gold Webhooks `POST` `/gold/webhooks`
     Description: Receive webhook notifications related to gold.
 
-    Request Body: Webhook data (JSON)
+    Request Body: 
 
     Response:
 
