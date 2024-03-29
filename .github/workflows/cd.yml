@@ -5,6 +5,10 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  SERVER_PUBLIC_IP: jjj
+  
+
 jobs:
     deploy:
         name: deploy
@@ -44,5 +48,26 @@ jobs:
               run: |
                 docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
                 docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-            
+            - name: Deploy docker image to EC2
+              env:
+                REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+                REPOSITORY: verses
+                IMAGE_TAG: latest
+                AWS_DEFAULT_REGION: ap-south-1
+              uses: appleboy/ssh-action@master
+              with:
+                host: ${{ env.SERVER_PUBLIC_IP }}
+                username: ubuntu
+                key: ${{ env.PRIVATE_SSH_KEY }}
+                envs: PRIVATE_SSH_KEY,REGISTRY,REPOSITORY,IMAGE_TAG,AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,AWS_DEFAULT_REGION,AWS_REGION
+                script: |-
+                  sudo apt update
+                  sudo apt install docker.io -y
+                  sudo apt install awscli -y
+                  sudo $(aws ecr get-login --no-include-email --region ap-south-1);
+                  sudo docker stop deploy || true
+                  sudo docker rm deploy || true
+                  sudo docker pull $REGISTRY/$REPOSITORY:$IMAGE_TAG
+                  sudo docker run -d --name deploy -p 8100:8100 $REGISTRY/$REPOSITORY:$IMAGE_TAG
+                  
             
