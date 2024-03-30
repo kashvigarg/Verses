@@ -3,6 +3,12 @@ A social media Backend APi
 
 ## API DOCUMENTATION
 
+###
+Welcome Page
+```
+http://13.201.15.193/app
+```
+
 ### Base URL
 ```
 http://13.201.15.193/api
