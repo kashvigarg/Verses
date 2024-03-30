@@ -4,6 +4,9 @@ A social media Backend APi
 ## API DOCUMENTATION
 
 ### Base URL
+```
+http://13.201.15.193/api
+```
 
 ### Endpoints
 
@@ -179,14 +182,7 @@ A social media Backend APi
     
     Status Code: 204 No Content
 - #### Administrative Tasks
-  - #### Gold Webhooks `POST` `/gold/webhooks`
-    Description: Receive webhook notifications related to gold.
 
-    Request Body: 
-
-    Response:
-
-    Status Code: 200 OK
   - #### Metrics `GET` `/metrics`
     Description: Retrieve server metrics.
 
