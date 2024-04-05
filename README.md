@@ -196,7 +196,7 @@ http://13.201.15.193/api
     Description: Check the health status of the API.
     
 - #### Administrative Tasks
-    ### Base URL
+    #### Base URL
     ```
     http://13.201.15.193/admin
     ```
