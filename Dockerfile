@@ -4,5 +4,6 @@ RUN apt-get update && apt-get install -y ca-certificates
 
 ADD Verses /usr/bin/Verses
 
-CMD ["Verses"]
+EXPOSE 80
 
+CMD ["Verses"]
