@@ -49,6 +49,13 @@ jobs:
               run: |
                 docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
                 docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+            - name: install goose
+              run: go install github.com/pressly/goose/v3/cmd/goose@latest
+            
+            - name: Run migrations
+              run: goose postgres ${{secrets.DB_CONN}} up
+
             - name: Deploy docker image to EC2
               env:
                 REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -69,6 +76,6 @@ jobs:
                   sudo docker stop deploy || true
                   sudo docker rm deploy || true
                   sudo docker pull $REGISTRY/$REPOSITORY:$IMAGE_TAG
-                  sudo docker run -d -e PORT=80 -e JWT_SECRET=fbd88e -e GOLD_KEY=nfjd878 -e DB_CONN=dgddbujdb --name deploy -p 80:80 $REGISTRY/$REPOSITORY:$IMAGE_TAG
+                  sudo docker run -d -e PORT=80 -e JWT_SECRET=${{secrets.JWT_TOKEN}} -e GOLD_KEY=nfjd878 -e DB_CONN=${{secrets.DB_CONN}} --name deploy -p 80:80 $REGISTRY/$REPOSITORY:$IMAGE_TAG
                   
             
