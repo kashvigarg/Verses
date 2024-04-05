@@ -8,5 +8,3 @@ EXPOSE 80
 
 CMD ["Verses"]
 
-
-CMD ["Verses"]
