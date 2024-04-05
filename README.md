@@ -1,10 +1,15 @@
 # Verse-S
-A social media Backend APi
+A social media Backend APi which follows a RESTful architecture, it has the following features:-
+- `User signup/login`: User can Signup using an email and a password, a refresh token and an authentication token is returned, which then can be used for login, an authrntication token expires in one hour ie one session is one hour long, another authentication token can be generated using the refresh token whiich lasts 60 days, the refresh token can be revoked upon users request.
+- `prose creation and profane`: users can create and access posts in the form of `prose`, it also provide features like `profane` which allows certain words to be muted.Prose can be deleted as well. 
+- `Data Storage`: passwords are stored using JWT based encryption, users are given a unique uuid for identification. Data is stored on a production ready database ie postgreSQL.
+- `admin tasks`: allows viewing the heath and basic metric for the api using REST endpoints.
+- `Deployment`: The backend is deployed on an AWS EC2 instance , the postgreSQL database is deployed using AWS RDS instance.
+- `CI/CD`: A continuous integration and continuous delivery/deployment is set up using github actions, the ci workflow ches=cks for the linting, formatting and security checks while the cd workflow, builds the code, dockerizes it,  creates database migrations and finally deploy the image on the ec2 instance.
 
 ## API DOCUMENTATION
 
-###
-Welcome Page
+### Welcome Page
 ```
 http://13.201.15.193/app
 ```
@@ -187,11 +192,15 @@ http://13.201.15.193/api
     `" Prose Deleted"`
     
     Status Code: 204 No Content
+  - #### Health Check `GET` `/healthz`
+    Description: Check the health status of the API.
+    
 - #### Administrative Tasks
+    ### Base URL
+    ```
+    http://13.201.15.193/admin
+    ```
 
   - #### Metrics `GET` `/metrics`
     Description: Retrieve server metrics.
-
-  - #### Health Check `GET` `/healthz`
-    Description: Check the health status of the API.
 
