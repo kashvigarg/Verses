@@ -2,10 +2,12 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 	auth "github.com/jaydee029/Verses/internal"
 	"github.com/jaydee029/Verses/internal/database"
 	"golang.org/x/crypto/bcrypt"
@@ -16,10 +18,10 @@ type Input struct {
 	Email    string `json:"email"`
 }
 type res struct {
-	ID     uuid.UUID `json:"id"`
-	Email  string    `json:"email"`
-	Name   string    `json:"name"`
-	Is_red bool      `json:"is_chirpy_red"`
+	ID     pgtype.UUID `json:"id"`
+	Email  string      `json:"email"`
+	Name   string      `json:"name"`
+	Is_red bool        `json:"is_chirpy_red,omitempty"`
 }
 type res_login struct {
 	Email         string `json:"email"`
@@ -45,15 +47,35 @@ func (cfg *apiconfig) createUser(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, "couldn't decode parameters")
 		return
 	}
+	err = auth.ValidateEmail(params.Email)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, err.Error())
+	}
+
 	encrypted, _ := bcrypt.GenerateFromPassword([]byte(params.Password), bcrypt.DefaultCost)
 
+	uuids := uuid.New().String()
+	var pgUUID pgtype.UUID
+
+	err = pgUUID.Scan(uuids)
+	if err != nil {
+		fmt.Println("Error setting UUID:", err)
+	}
+
+	var pgtime pgtype.Timestamp
+
+	err = pgtime.Scan(time.Now().UTC())
+	if err != nil {
+		fmt.Println("Error setting timestamp:", err)
+	}
+	//fmt.Println(pgtime)
 	user, err := cfg.DB.CreateUser(r.Context(), database.CreateUserParams{
 		Name:      params.Name,
 		Email:     params.Email,
 		Passwd:    encrypted,
-		ID:        uuid.New(),
-		CreatedAt: time.Now().UTC(),
-		UpdatedAt: time.Now().UTC(),
+		ID:        pgUUID,
+		CreatedAt: pgtime,
+		UpdatedAt: pgtime,
 	})
 
 	if err != nil {
@@ -90,7 +112,7 @@ func (cfg *apiconfig) userLogin(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, "Password doesn't match")
 	}
-
+	uuid.FromBytes(user.ID.Bytes[:])
 	Token, err := auth.Tokenize(user.ID, cfg.jwtsecret)
 
 	if err != nil {
@@ -143,8 +165,10 @@ func (cfg *apiconfig) updateUser(w http.ResponseWriter, r *http.Request) {
 
 	//userId, err := uuid.FromBytes([]byte(Idstr))
 
-	userId, err := uuid.Parse(Idstr)
+	//userId, err := uuid.Parse(Idstr)
+	var pgUUID pgtype.UUID
 
+	err = pgUUID.Scan(Idstr)
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, err.Error())
 		return
@@ -165,13 +189,19 @@ func (cfg *apiconfig) updateUser(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusUnauthorized, err.Error())
 		return
 	}
+	var pgtime pgtype.Timestamp
+
+	err = pgtime.Scan(time.Now().UTC())
+	if err != nil {
+		fmt.Println("Error setting timestamp:", err)
+	}
 
 	updateduser, err := cfg.DB.UpdateUser(r.Context(), database.UpdateUserParams{
-		ID:        userId,
+		ID:        pgUUID,
 		Name:      params.Name,
 		Email:     params.Email,
 		Passwd:    hashedPasswd,
-		UpdatedAt: time.Now().UTC(),
+		UpdatedAt: pgtime,
 	})
 
 	if err != nil {
@@ -203,9 +233,16 @@ func (cfg *apiconfig) revokeToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var pgtime pgtype.Timestamp
+
+	err = pgtime.Scan(time.Now().UTC())
+	if err != nil {
+		fmt.Println("Error setting timestamp:", err)
+	}
+
 	err = cfg.DB.RevokeToken(r.Context(), database.RevokeTokenParams{
 		Token:     []byte(token),
-		RevokedAt: time.Now().UTC(),
+		RevokedAt: pgtime,
 	})
 
 	if err != nil {
@@ -252,12 +289,21 @@ func (cfg *apiconfig) verifyRefresh(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusUnauthorized, err.Error())
 		return
 	}
-	userid, err := uuid.Parse(Idstr)
+	//userid, err := uuid.Parse(Idstr)
+	/*
+		if err != nil {
+			respondWithError(w, http.StatusUnauthorized, "user Id couldn't be parsed")
+			return
+		}
+	*/
+	var pgUUID pgtype.UUID
+
+	err = pgUUID.Scan(Idstr)
 	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, "user Id couldn't be parsed")
-		return
+		fmt.Println("Error setting UUID:", err)
 	}
-	auth_token, err := auth.Tokenize(userid, cfg.jwtsecret)
+
+	auth_token, err := auth.Tokenize(pgUUID, cfg.jwtsecret)
 
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, err.Error())
@@ -271,7 +317,7 @@ func (cfg *apiconfig) verifyRefresh(w http.ResponseWriter, r *http.Request) {
 
 func (cfg *apiconfig) is_gold(w http.ResponseWriter, r *http.Request) {
 	type user_struct struct {
-		User_id uuid.UUID `json:"user_id"`
+		User_id pgtype.UUID `json:"user_id"`
 	}
 	type body struct {
 		Event string      `json:"event"`

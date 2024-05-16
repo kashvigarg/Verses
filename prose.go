@@ -3,19 +3,18 @@ package main
 import (
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 	auth "github.com/jaydee029/Verses/internal"
 	"github.com/jaydee029/Verses/internal/database"
 )
 
 type Prose struct {
-	Id         int       `json:"id"`
-	Body       string    `json:"body"`
-	Created_at time.Time `json:"created_at"`
-	Updated_at time.Time `json:"updated_at"`
+	Id         int              `json:"id"`
+	Body       string           `json:"body"`
+	Created_at pgtype.Timestamp `json:"created_at"`
+	Updated_at pgtype.Timestamp `json:"updated_at"`
 }
 
 func (cfg *apiconfig) getProse(w http.ResponseWriter, r *http.Request) {
@@ -33,14 +32,21 @@ func (cfg *apiconfig) getProse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authorid_num, err := uuid.Parse(authorid)
+	/*authorid_num, err := uuid.Parse(authorid)
 
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "bytes couldn't be converted")
 		return
+	}*/
+	var pgUUID pgtype.UUID
+
+	err = pgUUID.Scan(authorid)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
 	}
 
-	chirps, err := cfg.DB.GetChirps(r.Context(), authorid_num)
+	chirps, err := cfg.DB.GetsProse(r.Context(), pgUUID)
 
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Prose couldn't be fetched")
@@ -102,12 +108,12 @@ func (cfg *apiconfig) ProsebyId(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authorid_num, err := uuid.Parse(authorid)
+	/*authorid_num, err := uuid.Parse(authorid)
 
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "bytes couldn't be converted")
 		return
-	}
+	}*/
 
 	chirpidstr := chi.URLParam(r, "proseId")
 	chirpid, err := strconv.Atoi(chirpidstr)
@@ -116,9 +122,16 @@ func (cfg *apiconfig) ProsebyId(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusBadRequest, "couldn't parse id")
 		return
 	}
+	var pgUUID pgtype.UUID
 
-	chirp, err := cfg.DB.GetChirp(r.Context(), database.GetChirpParams{
-		AuthorID: authorid_num,
+	err = pgUUID.Scan(authorid)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	chirp, err := cfg.DB.Getprose(r.Context(), database.GetproseParams{
+		AuthorID: pgUUID,
 		ID:       int32(chirpid),
 	})
 

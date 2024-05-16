@@ -2,23 +2,22 @@ package main
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 	auth "github.com/jaydee029/Verses/internal"
 	"github.com/jaydee029/Verses/internal/database"
 )
 
 type Res struct {
-	ID         int       `json:"id"`
-	Body       string    `json:"body"`
-	Created_at time.Time `json:"created_at"`
-	Updated_at time.Time `json:"Updated_at"`
+	ID         int              `json:"id"`
+	Body       string           `json:"body"`
+	Created_at pgtype.Timestamp `json:"created_at"`
+	Updated_at pgtype.Timestamp `json:"Updated_at"`
 }
 
 type body struct {
@@ -41,12 +40,12 @@ func (cfg *apiconfig) postProse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authorid_num, err := uuid.Parse(authorid)
+	/*authorid_num, err := uuid.Parse(authorid)
 
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "bytes couldn't be converted")
 		return
-	}
+	}*/
 
 	decoder := json.NewDecoder(r.Body)
 	params := body{}
@@ -61,15 +60,31 @@ func (cfg *apiconfig) postProse(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusBadRequest, "Prose is too long")
 		return
 	}
-	total, _ := cfg.DB.Countchirps(r.Context(), authorid_num)
+	var pgUUID pgtype.UUID
+
+	err = pgUUID.Scan(authorid)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	total, _ := cfg.DB.Countprose(r.Context(), pgUUID)
 	content := profane(params.Body)
 
-	chirp, err := cfg.DB.Createchirp(r.Context(), database.CreatechirpParams{
+	var pgtime pgtype.Timestamp
+
+	err = pgtime.Scan(time.Now().UTC())
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	chirp, err := cfg.DB.Createprose(r.Context(), database.CreateproseParams{
 		ID:        int32(total + 1),
-		AuthorID:  authorid_num,
+		AuthorID:  pgUUID,
 		Body:      content,
-		CreatedAt: time.Now().UTC(),
-		UpdatedAt: time.Now().UTC(),
+		CreatedAt: pgtime,
+		UpdatedAt: pgtime,
 	})
 
 	if err != nil {
@@ -99,13 +114,19 @@ func (cfg *apiconfig) DeleteProse(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusUnauthorized, err.Error())
 		return
 	}
+	var pgUUID pgtype.UUID
 
-	authorid_num, err := uuid.Parse(authorid)
+	err = pgUUID.Scan(authorid)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	/*authorid_num, err := uuid.Parse(authorid)
 
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "bytes couldn't be converted")
 		return
-	}
+	}*/
 
 	chirpidstr := chi.URLParam(r, "proseId")
 	chirpid, err := strconv.Atoi(chirpidstr)
@@ -114,8 +135,8 @@ func (cfg *apiconfig) DeleteProse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = cfg.DB.DeleteChirp(r.Context(), database.DeleteChirpParams{
-		AuthorID: authorid_num,
+	err = cfg.DB.Deleteprose(r.Context(), database.DeleteproseParams{
+		AuthorID: pgUUID,
 		ID:       int32(chirpid),
 	})
 
@@ -138,29 +159,4 @@ func profane(content string) string {
 	}
 
 	return strings.Join(contentslice, " ")
-}
-
-func respondWithError(w http.ResponseWriter, code int, res string) {
-	if code > 499 {
-		log.Printf("Responding with 5XX error: %s", res)
-	}
-	type errresponse struct {
-		Error string `json:"error"`
-	}
-	respondWithJson(w, code, errresponse{
-		Error: res,
-	})
-}
-
-func respondWithJson(w http.ResponseWriter, code int, res interface{}) {
-	w.Header().Set("content-type", "application/json")
-	data, err := json.Marshal(res)
-	if err != nil {
-		log.Printf("Error marshalling JSON: %s", err)
-		w.WriteHeader(500)
-		return
-	}
-
-	w.WriteHeader(code)
-	w.Write(data)
 }

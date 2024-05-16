@@ -3,11 +3,12 @@ package auth
 import (
 	"errors"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Revoke struct {
@@ -15,14 +16,14 @@ type Revoke struct {
 	Revoked_at time.Time `json:"revoked_at"`
 }
 
-func Tokenize(id uuid.UUID, secret_key string) (string, error) {
+func Tokenize(id pgtype.UUID, secret_key string) (string, error) {
 	secret_key_byte := []byte(secret_key)
 
 	claims := &jwt.RegisteredClaims{
 		Issuer:    "Bark-access",
 		IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
 		ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(time.Duration(60*60) * time.Second)), // 1 hour
-		Subject:   id.String(),
+		Subject:   string(id.Bytes[:]),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -33,14 +34,14 @@ func Tokenize(id uuid.UUID, secret_key string) (string, error) {
 	return ss, nil
 }
 
-func RefreshToken(id uuid.UUID, secret_key string) (string, error) {
+func RefreshToken(id pgtype.UUID, secret_key string) (string, error) {
 	secret_key_byte := []byte(secret_key)
 
 	claims := &jwt.RegisteredClaims{
 		Issuer:    "Bark-refresh",
 		IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
 		ExpiresAt: jwt.NewNumericDate(time.Now().UTC().AddDate(0, 2, 0)), // 60 days
-		Subject:   id.String(),
+		Subject:   string(id.Bytes[:]),
 	}
 
 	refresh_token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -124,6 +125,17 @@ func VerifyAPIkey(headers http.Header) (string, error) {
 	}
 
 	return splitToken[1], nil
+}
+
+func ValidateEmail(email string) error {
+	pattern := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
+	match, _ := regexp.MatchString(pattern, email)
+
+	if !match {
+		return errors.New("email is not valid")
+	}
+
+	return nil
 }
 
 /*

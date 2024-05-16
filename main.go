@@ -1,7 +1,7 @@
 package main
 
 import (
-	"database/sql"
+	"context"
 	"embed"
 	"fmt"
 	"io"
@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/lib/pq"
 
 	"github.com/go-chi/chi/v5"
@@ -38,11 +39,19 @@ func main() {
 	if dbURL == "" {
 		log.Fatal("database connection string not set")
 	}
+	/*
+		dbcon, err := sql.Open("postgres", dbURL)
+		if err != nil {
+			fmt.Print(err.Error())
+		}*/
 
-	dbcon, err := sql.Open("postgres", dbURL)
+	dbcon, err := pgxpool.New(context.Background(), dbURL)
 	if err != nil {
-		fmt.Print(err.Error())
+		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
+		os.Exit(1)
 	}
+	defer dbcon.Close()
+
 	queries := database.New(dbcon)
 
 	apicfg := apiconfig{
