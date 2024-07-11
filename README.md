@@ -11,6 +11,7 @@ A social media Backend API which follows a RESTful architecture, it has the foll
 
 ## API DOCUMENTATION
 
+(currently not hosted due to free plan limitations)
 ### Welcome Page
 ```
 http://13.201.15.193/app
