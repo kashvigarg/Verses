@@ -22,6 +22,7 @@ type apiconfig struct {
 	jwtsecret        string
 	apiKey           string
 	DB               *database.Queries
+	DBpool           *pgxpool.Pool
 }
 
 //go:embed static/*
@@ -59,6 +60,7 @@ func main() {
 		jwtsecret:        jwt_secret,
 		apiKey:           os.Getenv("GOLD_KEY"),
 		DB:               queries,
+		DBpool:           dbcon,
 	}
 
 	port := os.Getenv("PORT")
@@ -67,7 +69,7 @@ func main() {
 	s := chi.NewRouter()
 	t := chi.NewRouter()
 
-	fileconfig := apicfg.reqcounts(http.StripPrefix("/app", http.StripPrefix("/app", http.FileServer(http.Dir("./index.html")))))
+	fileconfig := apicfg.reqcounts(http.StripPrefix("/app", http.FileServer(http.Dir("./index.html"))))
 	r.Handle("/app", fileconfig)
 	r.Handle("/app/*", fileconfig)
 
@@ -93,6 +95,7 @@ func main() {
 	s.Post("/refresh", apicfg.verifyRefresh)
 	s.Post("/revoke", apicfg.revokeToken)
 	s.Put("/users", apicfg.updateUser)
+	s.Post("/users/{username}/toggle_follow", apicfg.toggleFollow)
 	s.Delete("/prose/{proseId}", apicfg.DeleteProse)
 	s.Post("/gold/webhooks", apicfg.is_gold)
 	t.Get("/metrics", apicfg.metrics)

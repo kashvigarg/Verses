@@ -3,7 +3,6 @@ package auth
 import (
 	"errors"
 	"net/http"
-	"regexp"
 	"strings"
 	"time"
 
@@ -20,7 +19,7 @@ func Tokenize(id pgtype.UUID, secret_key string) (string, error) {
 	secret_key_byte := []byte(secret_key)
 
 	claims := &jwt.RegisteredClaims{
-		Issuer:    "Bark-access",
+		Issuer:    "verses-access",
 		IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
 		ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(time.Duration(60*60) * time.Second)), // 1 hour
 		Subject:   string(id.Bytes[:]),
@@ -38,7 +37,7 @@ func RefreshToken(id pgtype.UUID, secret_key string) (string, error) {
 	secret_key_byte := []byte(secret_key)
 
 	claims := &jwt.RegisteredClaims{
-		Issuer:    "Bark-refresh",
+		Issuer:    "verses-refresh",
 		IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
 		ExpiresAt: jwt.NewNumericDate(time.Now().UTC().AddDate(0, 2, 0)), // 60 days
 		Subject:   string(id.Bytes[:]),
@@ -104,7 +103,7 @@ func VerifyRefresh(tokenstring, tokenSecret string) (bool, error) {
 		return false, errors.New("issuer couldn't be extracted")
 	}
 
-	if issuer == "Bark-refresh" {
+	if issuer == "verses-refresh" {
 		return true, nil
 	}
 	return false, nil
@@ -125,17 +124,6 @@ func VerifyAPIkey(headers http.Header) (string, error) {
 	}
 
 	return splitToken[1], nil
-}
-
-func ValidateEmail(email string) error {
-	pattern := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
-	match, _ := regexp.MatchString(pattern, email)
-
-	if !match {
-		return errors.New("email is not valid")
-	}
-
-	return nil
 }
 
 /*

@@ -8,5 +8,6 @@ CREATE TABLE users(
     updated_at TIMESTAMP NOT NULL
     );
 
+
 -- +goose Down
 DROP TABLE users;

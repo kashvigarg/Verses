@@ -9,7 +9,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgtype"
-	auth "github.com/jaydee029/Verses/internal"
+	auth "github.com/jaydee029/Verses/internal/auth"
 	"github.com/jaydee029/Verses/internal/database"
 )
 
@@ -39,13 +39,6 @@ func (cfg *apiconfig) postProse(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusUnauthorized, err.Error())
 		return
 	}
-
-	/*authorid_num, err := uuid.Parse(authorid)
-
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "bytes couldn't be converted")
-		return
-	}*/
 
 	decoder := json.NewDecoder(r.Body)
 	params := body{}
@@ -121,12 +114,6 @@ func (cfg *apiconfig) DeleteProse(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	/*authorid_num, err := uuid.Parse(authorid)
-
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "bytes couldn't be converted")
-		return
-	}*/
 
 	chirpidstr := chi.URLParam(r, "proseId")
 	chirpid, err := strconv.Atoi(chirpidstr)

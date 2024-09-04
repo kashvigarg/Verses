@@ -8,6 +8,11 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Follow struct {
+	FollowerID pgtype.UUID
+	FolloweeID pgtype.UUID
+}
+
 type Prose struct {
 	ID        int32
 	Body      string
@@ -29,4 +34,7 @@ type User struct {
 	CreatedAt pgtype.Timestamp
 	UpdatedAt pgtype.Timestamp
 	IsRed     bool
+	Followers int32
+	Followees int32
+	Username  string
 }
