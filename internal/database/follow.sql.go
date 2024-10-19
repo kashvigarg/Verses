@@ -11,17 +11,22 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const deletefollowee = `-- name: Deletefollowee :exec
-UPDATE users SET followees= followees-1 WHERE id=$1
+const addfollower = `-- name: Addfollower :exec
+INSERT INTO follows(followee_id,follower_id) VALUES($1,$2)
 `
 
-func (q *Queries) Deletefollowee(ctx context.Context, id pgtype.UUID) error {
-	_, err := q.db.Exec(ctx, deletefollowee, id)
+type AddfollowerParams struct {
+	FolloweeID pgtype.UUID
+	FollowerID pgtype.UUID
+}
+
+func (q *Queries) Addfollower(ctx context.Context, arg AddfollowerParams) error {
+	_, err := q.db.Exec(ctx, addfollower, arg.FolloweeID, arg.FollowerID)
 	return err
 }
 
 const deletefollower = `-- name: Deletefollower :one
-UPDATE users SET followers= followers-1 WHERE id=$1 RETURNING followers
+UPDATE users SET followers= followers-1 AND followees= followees-1 WHERE id=$1 RETURNING followers
 `
 
 func (q *Queries) Deletefollower(ctx context.Context, id pgtype.UUID) (int32, error) {
@@ -58,17 +63,22 @@ func (q *Queries) If_follows(ctx context.Context, arg If_followsParams) (bool, e
 	return exists, err
 }
 
-const updatefollowee = `-- name: Updatefollowee :exec
-UPDATE users SET followees= followees+1 WHERE id=$1
+const removefollower = `-- name: Removefollower :exec
+DELETE FROM follows WHERE followee_id=$1 AND follower_id=$2
 `
 
-func (q *Queries) Updatefollowee(ctx context.Context, id pgtype.UUID) error {
-	_, err := q.db.Exec(ctx, updatefollowee, id)
+type RemovefollowerParams struct {
+	FolloweeID pgtype.UUID
+	FollowerID pgtype.UUID
+}
+
+func (q *Queries) Removefollower(ctx context.Context, arg RemovefollowerParams) error {
+	_, err := q.db.Exec(ctx, removefollower, arg.FolloweeID, arg.FollowerID)
 	return err
 }
 
 const updatefollower = `-- name: Updatefollower :one
-UPDATE users SET followers= followers+1 WHERE id=$1 RETURNING followers
+UPDATE users SET followers= followers+1 AND followees=followees+1 WHERE id=$1 RETURNING followers
 `
 
 func (q *Queries) Updatefollower(ctx context.Context, id pgtype.UUID) (int32, error) {

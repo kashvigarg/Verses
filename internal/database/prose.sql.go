@@ -24,11 +24,11 @@ func (q *Queries) Countprose(ctx context.Context, authorID pgtype.UUID) (int64, 
 
 const createprose = `-- name: Createprose :one
 INSERT INTO prose(id,body,author_id,created_at,updated_at) VALUES($1,$2,$3,$4,$5)
-RETURNING id, body, author_id, created_at, updated_at
+RETURNING id, body, author_id, created_at, updated_at, likes
 `
 
 type CreateproseParams struct {
-	ID        int32
+	ID        pgtype.UUID
 	Body      string
 	AuthorID  pgtype.UUID
 	CreatedAt pgtype.Timestamp
@@ -50,6 +50,7 @@ func (q *Queries) Createprose(ctx context.Context, arg CreateproseParams) (Prose
 		&i.AuthorID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Likes,
 	)
 	return i, err
 }
@@ -60,7 +61,7 @@ DELETE FROM prose WHERE author_id=$1 AND id=$2
 
 type DeleteproseParams struct {
 	AuthorID pgtype.UUID
-	ID       int32
+	ID       pgtype.UUID
 }
 
 func (q *Queries) Deleteprose(ctx context.Context, arg DeleteproseParams) error {
@@ -69,12 +70,12 @@ func (q *Queries) Deleteprose(ctx context.Context, arg DeleteproseParams) error 
 }
 
 const getprose = `-- name: Getprose :one
-SELECT id, body, author_id, created_at, updated_at FROM prose WHERE author_id=$1 AND id=$2
+SELECT id, body, author_id, created_at, updated_at, likes FROM prose WHERE author_id=$1 AND id=$2
 `
 
 type GetproseParams struct {
 	AuthorID pgtype.UUID
-	ID       int32
+	ID       pgtype.UUID
 }
 
 func (q *Queries) Getprose(ctx context.Context, arg GetproseParams) (Prose, error) {
@@ -86,6 +87,7 @@ func (q *Queries) Getprose(ctx context.Context, arg GetproseParams) (Prose, erro
 		&i.AuthorID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Likes,
 	)
 	return i, err
 }
@@ -96,7 +98,7 @@ ORDER BY id
 `
 
 type GetsProseRow struct {
-	ID        int32
+	ID        pgtype.UUID
 	Body      string
 	CreatedAt pgtype.Timestamp
 	UpdatedAt pgtype.Timestamp

@@ -2,7 +2,6 @@ package main
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -11,7 +10,7 @@ import (
 )
 
 type Prose struct {
-	Id         int              `json:"id"`
+	Id         pgtype.UUID      `json:"id"`
 	Body       string           `json:"body"`
 	Created_at pgtype.Timestamp `json:"created_at"`
 	Updated_at pgtype.Timestamp `json:"updated_at"`
@@ -40,7 +39,7 @@ func (cfg *apiconfig) getProse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	chirps, err := cfg.DB.GetsProse(r.Context(), pgUUID)
+	prose, err := cfg.DB.GetsProse(r.Context(), pgUUID)
 
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Prose couldn't be fetched")
@@ -84,7 +83,7 @@ func (cfg *apiconfig) getProse(w http.ResponseWriter, r *http.Request) {
 				return chirps_[i].Id < chirps_[j].Id
 			})
 	*/
-	respondWithJson(w, http.StatusOK, chirps)
+	respondWithJson(w, http.StatusOK, prose)
 }
 
 func (cfg *apiconfig) ProsebyId(w http.ResponseWriter, r *http.Request) {
@@ -102,11 +101,53 @@ func (cfg *apiconfig) ProsebyId(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	chirpidstr := chi.URLParam(r, "proseId")
-	chirpid, err := strconv.Atoi(chirpidstr)
+	proseidstr := chi.URLParam(r, "proseId")
+	//proseid, err := strconv.Atoi(proseidstr)
+	var prose_pgUUID pgtype.UUID
+
+	err = prose_pgUUID.Scan(authorid)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	var pgUUID pgtype.UUID
+
+	err = pgUUID.Scan(proseidstr)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	prose, err := cfg.DB.Getprose(r.Context(), database.GetproseParams{
+		AuthorID: pgUUID,
+		ID:       prose_pgUUID,
+	})
 
 	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "couldn't parse id")
+		respondWithError(w, http.StatusInternalServerError, "Prose couldn't be fetched")
+		return
+	}
+
+	respondWithJson(w, http.StatusOK, Prose{
+		Id:         prose.ID,
+		Body:       prose.Body,
+		Created_at: prose.CreatedAt,
+		Updated_at: prose.UpdatedAt,
+	})
+}
+
+func (cfg *apiconfig) DeleteProse(w http.ResponseWriter, r *http.Request) {
+	token, err := auth.BearerHeader(r.Header)
+
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+
+	authorid, err := auth.ValidateToken(token, cfg.jwtsecret)
+
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, err.Error())
 		return
 	}
 	var pgUUID pgtype.UUID
@@ -117,20 +158,24 @@ func (cfg *apiconfig) ProsebyId(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	chirp, err := cfg.DB.Getprose(r.Context(), database.GetproseParams{
-		AuthorID: pgUUID,
-		ID:       int32(chirpid),
-	})
+	proseidstr := chi.URLParam(r, "proseId")
+	var prose_pgUUID pgtype.UUID
 
+	err = prose_pgUUID.Scan(proseidstr)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Prose couldn't be fetched")
+		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	respondWithJson(w, http.StatusOK, Prose{
-		Id:         int(chirp.ID),
-		Body:       chirp.Body,
-		Created_at: chirp.CreatedAt,
-		Updated_at: chirp.UpdatedAt,
+	err = cfg.DB.Deleteprose(r.Context(), database.DeleteproseParams{
+		AuthorID: pgUUID,
+		ID:       prose_pgUUID,
 	})
+
+	if err != nil {
+		respondWithError(w, http.StatusForbidden, err.Error())
+		return
+	}
+
+	respondWithJson(w, http.StatusOK, "Prose deleted")
 }

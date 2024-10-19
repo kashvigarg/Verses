@@ -20,18 +20,19 @@ type Input struct {
 	Email    string `json:"email"`
 	Username string `json:"username"`
 }
-type res struct {
-	ID     pgtype.UUID `json:"id"`
-	Email  string      `json:"email"`
-	Name   string      `json:"name"`
-	Is_red bool        `json:"is_chirpy_red,omitempty"`
+type User struct {
+	ID       pgtype.UUID `json:"id"`
+	Email    string      `json:"email"`
+	Name     string      `json:"name"`
+	Username string      `json:"username"`
+	Is_red   bool        `json:"is_chirpy_red,omitempty"`
 }
 type res_login struct {
 	Email         string `json:"email"`
 	Token         string `json:"token"`
 	Refresh_token string `json:"refresh_token"`
 }
-type User struct {
+type User_Input struct {
 	Name     string `json:"name"`
 	Password string `json:"password"`
 	Email    string `json:"email"`
@@ -44,13 +45,13 @@ type Token struct {
 func (cfg *apiconfig) createUser(w http.ResponseWriter, r *http.Request) {
 
 	decoder := json.NewDecoder(r.Body)
-	params := User{}
+	params := User_Input{}
 	err := decoder.Decode(&params)
-
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "couldn't decode parameters")
 		return
 	}
+
 	err = validate.ValidateEmail(params.Email)
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, err.Error())
@@ -67,6 +68,28 @@ func (cfg *apiconfig) createUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = validate.ValidateUsername(params.Username)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	username_if_exists, err := cfg.DB.Is_Username(r.Context(), params.Username)
+	if username_if_exists {
+		respondWithError(w, http.StatusConflict, "Email already exists")
+		return
+	}
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	err = validate.ValidatePassword(params.Password)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
 	encrypted, _ := bcrypt.GenerateFromPassword([]byte(params.Password), bcrypt.DefaultCost)
 
 	uuids := uuid.New().String()
@@ -78,7 +101,6 @@ func (cfg *apiconfig) createUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var pgtime pgtype.Timestamp
-
 	err = pgtime.Scan(time.Now().UTC())
 	if err != nil {
 		fmt.Println("Error setting timestamp:", err)
@@ -91,18 +113,19 @@ func (cfg *apiconfig) createUser(w http.ResponseWriter, r *http.Request) {
 		ID:        pgUUID,
 		CreatedAt: pgtime,
 		UpdatedAt: pgtime,
+		Username:  params.Username,
 	})
-
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	respondWithJson(w, http.StatusCreated, res{
-		Email:  user.Email,
-		ID:     user.ID,
-		Name:   user.Name,
-		Is_red: user.IsRed,
+	respondWithJson(w, http.StatusCreated, User{
+		Email:    user.Email,
+		ID:       user.ID,
+		Name:     user.Name,
+		Is_red:   user.IsRed,
+		Username: user.Username,
 	})
 }
 
@@ -187,7 +210,7 @@ func (cfg *apiconfig) updateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	decoder := json.NewDecoder(r.Body)
-	params := User{}
+	params := User_Input{}
 	err = decoder.Decode(&params)
 
 	if err != nil {
@@ -211,7 +234,6 @@ func (cfg *apiconfig) updateUser(w http.ResponseWriter, r *http.Request) {
 	updateduser, err := cfg.DB.UpdateUser(r.Context(), database.UpdateUserParams{
 		ID:        pgUUID,
 		Name:      params.Name,
-		Email:     params.Email,
 		Passwd:    hashedPasswd,
 		UpdatedAt: pgtime,
 	})
@@ -221,7 +243,7 @@ func (cfg *apiconfig) updateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondWithJson(w, http.StatusOK, res{
+	respondWithJson(w, http.StatusOK, User{
 		Name:  updateduser.Name,
 		Email: updateduser.Email,
 	})

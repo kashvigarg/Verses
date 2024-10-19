@@ -5,8 +5,8 @@ ADD COLUMN followees INT NOT NULL DEFAULT 0 CHECK (followees>=0),
 ADD COLUMN username VARCHAR(12) NOT NULL UNIQUE;
 
 CREATE TABLE follows(
-    follower_id uuid NOT NULL,
-    followee_id uuid NOT NULL,
+    follower_id uuid NOT NULL REFERENCES users(id),
+    followee_id uuid NOT NULL REFERENCES users(id),
     PRIMARY KEY (follower_id,followee_id) 
 );
 

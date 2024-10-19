@@ -140,7 +140,7 @@ func (cfg *apiconfig) is_gold(w http.ResponseWriter, r *http.Request) {
 			respondWithError(w, http.StatusInternalServerError, err.Error())
 			return
 		}
-		respondWithJson(w, http.StatusOK, res{
+		respondWithJson(w, http.StatusOK, User{
 			Name:   user_res.Name,
 			Email:  user_res.Email,
 			Is_red: user_res.IsRed,

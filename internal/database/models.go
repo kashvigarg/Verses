@@ -13,17 +13,29 @@ type Follow struct {
 	FolloweeID pgtype.UUID
 }
 
+type PostLike struct {
+	ProseID pgtype.UUID
+	UserID  pgtype.UUID
+}
+
 type Prose struct {
-	ID        int32
+	ID        pgtype.UUID
 	Body      string
 	AuthorID  pgtype.UUID
 	CreatedAt pgtype.Timestamp
 	UpdatedAt pgtype.Timestamp
+	Likes     int32
 }
 
 type Revocation struct {
 	Token     []byte
 	RevokedAt pgtype.Timestamp
+}
+
+type Timeline struct {
+	ID      int32
+	ProseID pgtype.UUID
+	UserID  pgtype.UUID
 }
 
 type User struct {

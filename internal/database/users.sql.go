@@ -74,12 +74,45 @@ func (q *Queries) GetUser(ctx context.Context, email string) (User, error) {
 	return i, err
 }
 
+const getUserbyId = `-- name: GetUserbyId :one
+SELECT name, email, passwd, id, created_at, updated_at, is_red, followers, followees, username FROM users WHERE id=$1
+`
+
+func (q *Queries) GetUserbyId(ctx context.Context, id pgtype.UUID) (User, error) {
+	row := q.db.QueryRow(ctx, getUserbyId, id)
+	var i User
+	err := row.Scan(
+		&i.Name,
+		&i.Email,
+		&i.Passwd,
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.IsRed,
+		&i.Followers,
+		&i.Followees,
+		&i.Username,
+	)
+	return i, err
+}
+
 const is_Email = `-- name: Is_Email :one
 SELECT EXISTS (SELECT 1 FROM users WHERE Email=$1)
 `
 
 func (q *Queries) Is_Email(ctx context.Context, email string) (bool, error) {
 	row := q.db.QueryRow(ctx, is_Email, email)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
+const is_Username = `-- name: Is_Username :one
+SELECT EXISTS (SELECT 1 FROM users WHERE username=$1)
+`
+
+func (q *Queries) Is_Username(ctx context.Context, username string) (bool, error) {
+	row := q.db.QueryRow(ctx, is_Username, username)
 	var exists bool
 	err := row.Scan(&exists)
 	return exists, err
@@ -109,14 +142,13 @@ func (q *Queries) Is_red(ctx context.Context, isRed bool) (User, error) {
 }
 
 const updateUser = `-- name: UpdateUser :one
-UPDATE users SET name=$2 ,Email=$3 ,passwd=$4 ,updated_at=$5 WHERE id=$1
+UPDATE users SET name=$2 ,passwd=$3 ,updated_at=$4 WHERE id=$1
 RETURNING name, email, passwd, id, created_at, updated_at, is_red, followers, followees, username
 `
 
 type UpdateUserParams struct {
 	ID        pgtype.UUID
 	Name      string
-	Email     string
 	Passwd    []byte
 	UpdatedAt pgtype.Timestamp
 }
@@ -125,7 +157,6 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 	row := q.db.QueryRow(ctx, updateUser,
 		arg.ID,
 		arg.Name,
-		arg.Email,
 		arg.Passwd,
 		arg.UpdatedAt,
 	)
