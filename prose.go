@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -9,100 +10,99 @@ import (
 	"github.com/jaydee029/Verses/internal/database"
 )
 
-type Prose struct {
-	Id         pgtype.UUID      `json:"id"`
-	Body       string           `json:"body"`
-	Created_at pgtype.Timestamp `json:"created_at"`
-	Updated_at pgtype.Timestamp `json:"updated_at"`
-}
-
 func (cfg *apiconfig) getProse(w http.ResponseWriter, r *http.Request) {
 	token, err := auth.BearerHeader(r.Header)
-
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, err.Error())
 		return
 	}
 
 	authorid, err := auth.ValidateToken(token, cfg.jwtsecret)
-
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, err.Error())
 		return
 	}
 
-	var pgUUID pgtype.UUID
+	username := chi.URLParam(r, "username")
 
+	if username == "" {
+		respondWithError(w, http.StatusBadRequest, "username not given")
+	}
+
+	var before pgtype.Timestamp
+
+	beforestr := r.URL.Query().Get("before")
+	if beforestr != "" {
+		err = before.Scan(beforestr)
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, err.Error())
+		}
+	}
+	limitstr := r.URL.Query().Get("limit")
+	if limitstr == "" {
+		limitstr = "10"
+	}
+
+	limit, err := strconv.ParseInt(limitstr, 10, 32)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+	}
+
+	var pgUUID pgtype.UUID
 	err = pgUUID.Scan(authorid)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
+	err = before.Scan(beforestr)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
 
-	prose, err := cfg.DB.GetsProse(r.Context(), pgUUID)
+	posts, err := cfg.DB.GetsProseAll(r.Context(), database.GetsProseAllParams{
+		AuthorID: pgUUID,
+		Username: username,
+		Column3:  before,
+		Limit:    int32(limit),
+	})
 
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Prose couldn't be fetched")
 		return
 	}
-	/*
-		author_id := -1
-		s := r.URL.Query().Get("author_id")
-		if s != "" {
-			author_id, err = strconv.Atoi(s)
-			if err != nil {
-				respondWithError(w, http.StatusBadRequest, "author id couldnt be parsed")
-				return
-			}
-		}
 
-			sorting := "asc"
-			sort_val := r.URL.Query().Get("sort")
+	var prose []Prose
 
-			if sort_val == "desc" {
-				sorting = "desc"
-			}
+	for _, k := range posts {
+		prose = append(prose, Prose{
+			ID:          k.ID,
+			Body:        k.Body,
+			Mine:        k.Mine,
+			Liked:       k.Liked,
+			Likes_count: int(k.Likes),
+			Created_at:  k.CreatedAt,
+			Updated_at:  k.UpdatedAt,
+		})
+	}
 
-			chirps_ := []Chirp{}
-			for _, chirp := range chirps {
-				if author_id != -1 && chirp.Author_id != author_id {
-					continue
-				}
-
-				chirps_ = append(chirps_, Chirp{
-					Id:        chirp.Id,
-					Body:      chirp.Body,
-					Author_id: chirp.Author_id,
-				})
-			}
-
-			sort.Slice(chirps_, func(i, j int) bool {
-				if sorting == "desc" {
-					return chirps_[i].Id > chirps_[j].Id
-				}
-				return chirps_[i].Id < chirps_[j].Id
-			})
-	*/
 	respondWithJson(w, http.StatusOK, prose)
 }
 
 func (cfg *apiconfig) ProsebyId(w http.ResponseWriter, r *http.Request) {
 	token, err := auth.BearerHeader(r.Header)
-
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, err.Error())
 		return
 	}
 
 	authorid, err := auth.ValidateToken(token, cfg.jwtsecret)
-
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, err.Error())
 		return
 	}
 
 	proseidstr := chi.URLParam(r, "proseId")
-	//proseid, err := strconv.Atoi(proseidstr)
 	var prose_pgUUID pgtype.UUID
 
 	err = prose_pgUUID.Scan(authorid)
@@ -118,7 +118,7 @@ func (cfg *apiconfig) ProsebyId(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	prose, err := cfg.DB.Getprose(r.Context(), database.GetproseParams{
+	post, err := cfg.DB.GetProseSingle(r.Context(), database.GetProseSingleParams{
 		AuthorID: pgUUID,
 		ID:       prose_pgUUID,
 	})
@@ -128,12 +128,17 @@ func (cfg *apiconfig) ProsebyId(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondWithJson(w, http.StatusOK, Prose{
-		Id:         prose.ID,
-		Body:       prose.Body,
-		Created_at: prose.CreatedAt,
-		Updated_at: prose.UpdatedAt,
-	})
+	prose := Prose{
+		Username:    post.Username,
+		Body:        post.Body,
+		Created_at:  post.CreatedAt,
+		Updated_at:  post.UpdatedAt,
+		Mine:        post.Mine,
+		Liked:       post.Liked,
+		Likes_count: int(post.Likes),
+	}
+
+	respondWithJson(w, http.StatusOK, prose)
 }
 
 func (cfg *apiconfig) DeleteProse(w http.ResponseWriter, r *http.Request) {

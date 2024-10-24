@@ -16,17 +16,14 @@ type togglelike struct {
 
 func (cfg *apiconfig) toggleLike(w http.ResponseWriter, r *http.Request) {
 
-	proseidstr := chi.URLParam(r, "postid")
-
+	proseidstr := chi.URLParam(r, "proseId")
 	token, err := auth.BearerHeader(r.Header)
-
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, err.Error())
 		return
 	}
 
 	useridstr, err := auth.ValidateToken(token, cfg.jwtsecret)
-
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, err.Error())
 		return
@@ -66,7 +63,6 @@ func (cfg *apiconfig) toggleLike(w http.ResponseWriter, r *http.Request) {
 		ProseID: prose_id,
 		UserID:  user_id,
 	})
-
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "error fetching likes")
 		return
@@ -108,6 +104,7 @@ func (cfg *apiconfig) toggleLike(w http.ResponseWriter, r *http.Request) {
 		}
 		liked = true
 	}
+	
 	tx.Commit(r.Context())
 	tx = nil
 	respondWithJson(w, http.StatusAccepted, togglelike{

@@ -69,55 +69,100 @@ func (q *Queries) Deleteprose(ctx context.Context, arg DeleteproseParams) error 
 	return err
 }
 
-const getprose = `-- name: Getprose :one
-SELECT id, body, author_id, created_at, updated_at, likes FROM prose WHERE author_id=$1 AND id=$2
+const getProseSingle = `-- name: GetProseSingle :one
+SELECT p.body,p.created_at,p.updated_at,p.likes, u.username ,
+CASE WHEN author_id=$1 THEN true ELSE false END AS Mine,
+CASE WHEN Likes.user_id IS NOT NULL THEN true ELSE false END AS Liked
+FROM prose as p 
+INNER JOIN users AS u 
+ON p.author_id=u.id
+LEFT JOIN post_likes AS Likes
+ON Likes.user_id=$1 AND Likes.prose_id=p.id
+WHERE p.id=$2
 `
 
-type GetproseParams struct {
+type GetProseSingleParams struct {
 	AuthorID pgtype.UUID
 	ID       pgtype.UUID
 }
 
-func (q *Queries) Getprose(ctx context.Context, arg GetproseParams) (Prose, error) {
-	row := q.db.QueryRow(ctx, getprose, arg.AuthorID, arg.ID)
-	var i Prose
+type GetProseSingleRow struct {
+	Body      string
+	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
+	Likes     int32
+	Username  string
+	Mine      bool
+	Liked     bool
+}
+
+func (q *Queries) GetProseSingle(ctx context.Context, arg GetProseSingleParams) (GetProseSingleRow, error) {
+	row := q.db.QueryRow(ctx, getProseSingle, arg.AuthorID, arg.ID)
+	var i GetProseSingleRow
 	err := row.Scan(
-		&i.ID,
 		&i.Body,
-		&i.AuthorID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Likes,
+		&i.Username,
+		&i.Mine,
+		&i.Liked,
 	)
 	return i, err
 }
 
-const getsProse = `-- name: GetsProse :many
-SELECT id,body,created_at,updated_at FROM prose WHERE author_id=$1
-ORDER BY id
+const getsProseAll = `-- name: GetsProseAll :many
+SELECT id,body,created_at,updated_at,likes,
+CASE WHEN author_id=$1 THEN true ELSE false END AS Mine, 
+CASE WHEN Likes.user_id IS NOT NULL THEN true ELSE false END AS Liked
+FROM prose LEFT JOIN post_likes AS Likes 
+ON Likes.user_id=$1 AND Likes.prose_id=prose.id 
+WHERE prose.user_id=(SELECT id FROM users WHERE username=$2)
+AND
+$3::TIMESTAMP IS NULL OR prose.created_at < $3
+ORDER BY prose.created_at DESC,prose.id DESC
+LIMIT $4
 `
 
-type GetsProseRow struct {
+type GetsProseAllParams struct {
+	AuthorID pgtype.UUID
+	Username string
+	Column3  pgtype.Timestamp
+	Limit    int32
+}
+
+type GetsProseAllRow struct {
 	ID        pgtype.UUID
 	Body      string
 	CreatedAt pgtype.Timestamp
 	UpdatedAt pgtype.Timestamp
+	Likes     int32
+	Mine      bool
+	Liked     bool
 }
 
-func (q *Queries) GetsProse(ctx context.Context, authorID pgtype.UUID) ([]GetsProseRow, error) {
-	rows, err := q.db.Query(ctx, getsProse, authorID)
+func (q *Queries) GetsProseAll(ctx context.Context, arg GetsProseAllParams) ([]GetsProseAllRow, error) {
+	rows, err := q.db.Query(ctx, getsProseAll,
+		arg.AuthorID,
+		arg.Username,
+		arg.Column3,
+		arg.Limit,
+	)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetsProseRow
+	var items []GetsProseAllRow
 	for rows.Next() {
-		var i GetsProseRow
+		var i GetsProseAllRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Body,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Likes,
+			&i.Mine,
+			&i.Liked,
 		); err != nil {
 			return nil, err
 		}

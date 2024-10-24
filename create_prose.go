@@ -14,14 +14,17 @@ import (
 	"github.com/jaydee029/Verses/internal/database"
 )
 
-type Post struct {
-	ID         pgtype.UUID      `json:"id"`
-	Userid     pgtype.UUID      `json:"userid"`
-	Body       string           `json:"body"`
-	User       *User            `json:"user,omitempty"`
-	Created_at pgtype.Timestamp `json:"created_at"`
-	Updated_at pgtype.Timestamp `json:"Updated_at"`
-	Mine       bool             `json:"mine"`
+type Prose struct {
+	ID          pgtype.UUID      `json:"id,omitempty"`
+	Userid      pgtype.UUID      `json:"userid,omitempty"`
+	Body        string           `json:"body"`
+	User        *User            `json:"user,omitempty"`
+	Created_at  pgtype.Timestamp `json:"created_at"`
+	Updated_at  pgtype.Timestamp `json:"Updated_at"`
+	Mine        bool             `json:"mine"`
+	Liked       bool             `json:"liked"`
+	Likes_count int              `json:"likes_count"`
+	Username    string           `json:"username,omitempty"`
 }
 
 type body struct {
@@ -105,7 +108,7 @@ func (cfg *apiconfig) postProse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondWithJson(w, http.StatusCreated, Post{
+	respondWithJson(w, http.StatusCreated, Prose{
 		ID:         post_pgUUID,
 		Body:       prose.Body,
 		Created_at: prose.CreatedAt,
@@ -143,7 +146,7 @@ func (cfg *apiconfig) postProse(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, "couldn't commit the transaction")
 	}
 
-	go func(p Post) {
+	go func(p Prose) {
 
 		u, err := cfg.DB.GetUserbyId(r.Context(), p.Userid)
 
@@ -173,7 +176,7 @@ func (cfg *apiconfig) postProse(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (cfg *apiconfig) fanoutprose(ctx context.Context, p Post) ([]database.FetchTimelineItemsRow, error) {
+func (cfg *apiconfig) fanoutprose(ctx context.Context, p Prose) ([]database.FetchTimelineItemsRow, error) {
 
 	items, err := cfg.DB.FetchTimelineItems(ctx, database.FetchTimelineItemsParams{
 		ProseID:    p.ID,

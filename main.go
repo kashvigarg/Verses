@@ -88,8 +88,10 @@ func main() {
 
 	s.Get("/healthz", apireadiness)
 	s.Post("/prose", apicfg.postProse)
-	s.Get("/prose", apicfg.getProse)
+	s.Get("/{username}/prose", apicfg.getProse)
 	s.Get("/prose/{proseId}", apicfg.ProsebyId)
+	s.Post("/prose/{proseId}/togglelike", apicfg.toggleLike)
+	s.Get("/timeline", apicfg.timeline)
 	s.Post("/users", apicfg.createUser)
 	s.Post("/login", apicfg.userLogin)
 	s.Post("/refresh", apicfg.verifyRefresh)
