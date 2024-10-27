@@ -6,7 +6,7 @@ RETURNING *;
 SELECT COUNT(*) FROM prose WHERE author_id=$1;
 
 -- name: GetProseSingle :one
-SELECT p.body,p.created_at,p.updated_at,p.likes, u.username ,
+SELECT p.body,p.created_at,p.updated_at,p.likes, p.comments ,u.username ,
 CASE WHEN author_id=$1 THEN true ELSE false END AS Mine,
 CASE WHEN Likes.user_id IS NOT NULL THEN true ELSE false END AS Liked
 FROM prose as p 
@@ -17,7 +17,7 @@ ON Likes.user_id=$1 AND Likes.prose_id=p.id
 WHERE p.id=$2;
 
 -- name: GetsProseAll :many
-SELECT id,body,created_at,updated_at,likes,
+SELECT id,body,created_at,updated_at,likes, comments,
 CASE WHEN author_id=$1 THEN true ELSE false END AS Mine, 
 CASE WHEN Likes.user_id IS NOT NULL THEN true ELSE false END AS Liked
 FROM prose LEFT JOIN post_likes AS Likes 

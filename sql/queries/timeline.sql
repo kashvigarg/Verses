@@ -7,7 +7,7 @@ SELECT $1, follower_id FROM follows WHERE followee_id=$2
 RETURNING id,user_id;
 
 -- name: GetTimeline :many
-SELECT tl.id, tl.prose_id, p.body, p.created_at, p.updated_at, p.likes, u.username,
+SELECT tl.id, tl.prose_id, p.body, p.created_at, p.updated_at, p.likes, p.comments , u.username,
 CASE WHEN author_id=$1 THEN true ELSE false END AS Mine,
 CASE WHEN Likes.user_id IS NOT NULL THEN true ELSE false END AS Liked
 FROM timeline AS tl INNER JOIN prose AS p 

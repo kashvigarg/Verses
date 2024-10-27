@@ -8,6 +8,20 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Comment struct {
+	ID         int32
+	ProseID    pgtype.UUID
+	UserID     pgtype.UUID
+	Body       string
+	CreatedAt  pgtype.Timestamp
+	LikesCount int32
+}
+
+type CommentLike struct {
+	CommentID int32
+	UserID    pgtype.UUID
+}
+
 type Follow struct {
 	FollowerID pgtype.UUID
 	FolloweeID pgtype.UUID
@@ -25,6 +39,7 @@ type Prose struct {
 	CreatedAt pgtype.Timestamp
 	UpdatedAt pgtype.Timestamp
 	Likes     int32
+	Comments  int32
 }
 
 type Revocation struct {

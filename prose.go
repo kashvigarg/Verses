@@ -25,10 +25,6 @@ func (cfg *apiconfig) getProse(w http.ResponseWriter, r *http.Request) {
 
 	username := chi.URLParam(r, "username")
 
-	if username == "" {
-		respondWithError(w, http.StatusBadRequest, "username not given")
-	}
-
 	var before pgtype.Timestamp
 
 	beforestr := r.URL.Query().Get("before")
@@ -83,6 +79,7 @@ func (cfg *apiconfig) getProse(w http.ResponseWriter, r *http.Request) {
 			Likes_count: int(k.Likes),
 			Created_at:  k.CreatedAt,
 			Updated_at:  k.UpdatedAt,
+			Comments:    int(k.Comments),
 		})
 	}
 
@@ -136,6 +133,7 @@ func (cfg *apiconfig) ProsebyId(w http.ResponseWriter, r *http.Request) {
 		Mine:        post.Mine,
 		Liked:       post.Liked,
 		Likes_count: int(post.Likes),
+		Comments:    int(post.Comments),
 	}
 
 	respondWithJson(w, http.StatusOK, prose)

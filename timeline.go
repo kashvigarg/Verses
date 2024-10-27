@@ -84,6 +84,7 @@ func (cfg *apiconfig) timeline(w http.ResponseWriter, r *http.Request) {
 				Mine:        k.Mine,
 				Liked:       k.Liked,
 				Likes_count: int(k.Likes),
+				Comments:    int(k.Comments),
 			},
 		})
 

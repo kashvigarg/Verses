@@ -24,7 +24,7 @@ func (q *Queries) Countprose(ctx context.Context, authorID pgtype.UUID) (int64, 
 
 const createprose = `-- name: Createprose :one
 INSERT INTO prose(id,body,author_id,created_at,updated_at) VALUES($1,$2,$3,$4,$5)
-RETURNING id, body, author_id, created_at, updated_at, likes
+RETURNING id, body, author_id, created_at, updated_at, likes, comments
 `
 
 type CreateproseParams struct {
@@ -51,6 +51,7 @@ func (q *Queries) Createprose(ctx context.Context, arg CreateproseParams) (Prose
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Likes,
+		&i.Comments,
 	)
 	return i, err
 }
@@ -70,7 +71,7 @@ func (q *Queries) Deleteprose(ctx context.Context, arg DeleteproseParams) error 
 }
 
 const getProseSingle = `-- name: GetProseSingle :one
-SELECT p.body,p.created_at,p.updated_at,p.likes, u.username ,
+SELECT p.body,p.created_at,p.updated_at,p.likes, p.comments ,u.username ,
 CASE WHEN author_id=$1 THEN true ELSE false END AS Mine,
 CASE WHEN Likes.user_id IS NOT NULL THEN true ELSE false END AS Liked
 FROM prose as p 
@@ -91,6 +92,7 @@ type GetProseSingleRow struct {
 	CreatedAt pgtype.Timestamp
 	UpdatedAt pgtype.Timestamp
 	Likes     int32
+	Comments  int32
 	Username  string
 	Mine      bool
 	Liked     bool
@@ -104,6 +106,7 @@ func (q *Queries) GetProseSingle(ctx context.Context, arg GetProseSingleParams) 
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Likes,
+		&i.Comments,
 		&i.Username,
 		&i.Mine,
 		&i.Liked,
@@ -112,7 +115,7 @@ func (q *Queries) GetProseSingle(ctx context.Context, arg GetProseSingleParams) 
 }
 
 const getsProseAll = `-- name: GetsProseAll :many
-SELECT id,body,created_at,updated_at,likes,
+SELECT id,body,created_at,updated_at,likes, comments,
 CASE WHEN author_id=$1 THEN true ELSE false END AS Mine, 
 CASE WHEN Likes.user_id IS NOT NULL THEN true ELSE false END AS Liked
 FROM prose LEFT JOIN post_likes AS Likes 
@@ -137,6 +140,7 @@ type GetsProseAllRow struct {
 	CreatedAt pgtype.Timestamp
 	UpdatedAt pgtype.Timestamp
 	Likes     int32
+	Comments  int32
 	Mine      bool
 	Liked     bool
 }
@@ -161,6 +165,7 @@ func (q *Queries) GetsProseAll(ctx context.Context, arg GetsProseAllParams) ([]G
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Likes,
+			&i.Comments,
 			&i.Mine,
 			&i.Liked,
 		); err != nil {

@@ -48,7 +48,7 @@ func (q *Queries) FetchTimelineItems(ctx context.Context, arg FetchTimelineItems
 }
 
 const getTimeline = `-- name: GetTimeline :many
-SELECT tl.id, tl.prose_id, p.body, p.created_at, p.updated_at, p.likes, u.username,
+SELECT tl.id, tl.prose_id, p.body, p.created_at, p.updated_at, p.likes, p.comments , u.username,
 CASE WHEN author_id=$1 THEN true ELSE false END AS Mine,
 CASE WHEN Likes.user_id IS NOT NULL THEN true ELSE false END AS Liked
 FROM timeline AS tl INNER JOIN prose AS p 
@@ -77,6 +77,7 @@ type GetTimelineRow struct {
 	CreatedAt pgtype.Timestamp
 	UpdatedAt pgtype.Timestamp
 	Likes     int32
+	Comments  int32
 	Username  string
 	Mine      bool
 	Liked     bool
@@ -98,6 +99,7 @@ func (q *Queries) GetTimeline(ctx context.Context, arg GetTimelineParams) ([]Get
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Likes,
+			&i.Comments,
 			&i.Username,
 			&i.Mine,
 			&i.Liked,

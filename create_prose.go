@@ -25,6 +25,7 @@ type Prose struct {
 	Liked       bool             `json:"liked"`
 	Likes_count int              `json:"likes_count"`
 	Username    string           `json:"username,omitempty"`
+	Comments    int              `json:"comments,omitempty"`
 }
 
 type body struct {
