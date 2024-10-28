@@ -1,6 +1,6 @@
 -- +goose Up
 CREATE TABLE chirps(
-    id INT NOT NULL,
+    id uuid PRIMARY KEY,
     body TEXT NOT NULL,
     author_id uuid NOT NULL REFERENCES users(id),
     created_at TIMESTAMP NOT NULL,

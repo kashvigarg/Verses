@@ -150,15 +150,17 @@ func (cfg *apiconfig) userLogin(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, "Password doesn't match")
 	}
-	uuid.FromBytes(user.ID.Bytes[:])
-	Token, err := auth.Tokenize(user.ID, cfg.jwtsecret)
+
+	Userid, _ := uuid.FromBytes(user.ID.Bytes[:])
+
+	Token, err := auth.Tokenize(Userid, cfg.jwtsecret)
 
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, err.Error())
 		return
 	}
 
-	Refresh_token, err := auth.RefreshToken(user.ID, cfg.jwtsecret)
+	Refresh_token, err := auth.RefreshToken(Userid, cfg.jwtsecret)
 
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, err.Error())

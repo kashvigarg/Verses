@@ -8,13 +8,7 @@ CREATE TABLE timeline(
 CREATE UNIQUE INDEX sorted_prose ON prose(created_at DESC);
 CREATE UNIQUE INDEX unique_timeline ON timeline(prose_id,user_id);
 
-ALTER TABLE prose
-ALTER COLUMN id SET DATA TYPE uuid; 
-
 -- +goose Down
 DROP TABLE timeline;
 DROP INDEX sorted_prose;
 DROP INDEX unique_timeline;
-
-ALTER TABLE prose
-ALTER COLUMN id INT; 

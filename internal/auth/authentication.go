@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/google/uuid"
 )
 
 type Revoke struct {
@@ -15,14 +15,14 @@ type Revoke struct {
 	Revoked_at time.Time `json:"revoked_at"`
 }
 
-func Tokenize(id pgtype.UUID, secret_key string) (string, error) {
+func Tokenize(id uuid.UUID, secret_key string) (string, error) {
 	secret_key_byte := []byte(secret_key)
 
 	claims := &jwt.RegisteredClaims{
 		Issuer:    "verses-access",
 		IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
 		ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(time.Duration(60*60) * time.Second)), // 1 hour
-		Subject:   string(id.Bytes[:]),
+		Subject:   id.String(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -33,14 +33,14 @@ func Tokenize(id pgtype.UUID, secret_key string) (string, error) {
 	return ss, nil
 }
 
-func RefreshToken(id pgtype.UUID, secret_key string) (string, error) {
+func RefreshToken(id uuid.UUID, secret_key string) (string, error) {
 	secret_key_byte := []byte(secret_key)
 
 	claims := &jwt.RegisteredClaims{
 		Issuer:    "verses-refresh",
 		IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
 		ExpiresAt: jwt.NewNumericDate(time.Now().UTC().AddDate(0, 2, 0)), // 60 days
-		Subject:   string(id.Bytes[:]),
+		Subject:   id.String(),
 	}
 
 	refresh_token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

@@ -2,7 +2,7 @@
 CREATE TABLE post_likes(
     prose_id uuid NOT NULL REFERENCES prose(id),
     user_id uuid NOT NULL REFERENCES users(id),
-    PRIMARY KEY (post_id,user_id)
+    PRIMARY KEY(prose_id,user_id)
 );
 
 ALTER TABLE prose

@@ -37,13 +37,13 @@ func (cfg *apiconfig) postProse(w http.ResponseWriter, r *http.Request) {
 	token, err := auth.BearerHeader(r.Header)
 
 	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, err.Error())
+		respondWithError(w, http.StatusUnauthorized, "error decoding auth header:"+err.Error())
 		return
 	}
 	authorid, err := auth.ValidateToken(token, cfg.jwtsecret)
 
 	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, err.Error())
+		respondWithError(w, http.StatusUnauthorized, "error parsing the userid:"+err.Error())
 		return
 	}
 	decoder := json.NewDecoder(r.Body)
@@ -65,7 +65,7 @@ func (cfg *apiconfig) postProse(w http.ResponseWriter, r *http.Request) {
 	var pgUUID pgtype.UUID
 	err = pgUUID.Scan(authorid)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, err.Error())
+		respondWithError(w, http.StatusInternalServerError, "error parsing into pgtype.uuid")
 		return
 	}
 	uuids := uuid.New().String()
@@ -82,13 +82,13 @@ func (cfg *apiconfig) postProse(w http.ResponseWriter, r *http.Request) {
 	var pgtime pgtype.Timestamp
 	err = pgtime.Scan(time.Now().UTC())
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, err.Error())
+		respondWithError(w, http.StatusInternalServerError, "error parsing timestamp into pgtype value")
 		return
 	}
 
 	tx, err := cfg.DBpool.Begin(r.Context())
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, err.Error())
+		respondWithError(w, http.StatusInternalServerError, "error starting the transaction"+err.Error())
 		return
 	}
 

@@ -13,7 +13,7 @@ CREATE INDEX post_comments ON comments(created_at DESC);
 CREATE TABLE comment_likes(
     comment_id INT NOT NULL REFERENCES comments(id),
     user_id uuid NOT NULL REFERENCES users(id),
-    PRIMARY KEY (prose_id,user_id)
+    PRIMARY KEY (comment_id,user_id)
 );
 
 ALTER TABLE prose

@@ -6,22 +6,14 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	auth "github.com/jaydee029/Verses/internal/auth"
 	"github.com/jaydee029/Verses/internal/database"
 )
 
 func (cfg *apiconfig) revokeToken(w http.ResponseWriter, r *http.Request) {
-	/*
-		decoder := json.NewDecoder(r.Body)
-		params := User{}
-		err := decoder.Decode(&params)
 
-		if err != io.EOF {
-			respondWithError(w, http.StatusUnauthorized, "Body is provided")
-			return
-		}
-	*/
 	token, err := auth.BearerHeader(r.Header)
 
 	if err != nil {
@@ -86,14 +78,12 @@ func (cfg *apiconfig) verifyRefresh(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var pgUUID pgtype.UUID
-
-	err = pgUUID.Scan(Idstr)
+	Id, err := uuid.Parse(Idstr)
 	if err != nil {
-		fmt.Println("Error setting UUID:", err)
+		fmt.Println("Error parsing string to UUID:", err)
 	}
 
-	auth_token, err := auth.Tokenize(pgUUID, cfg.jwtsecret)
+	auth_token, err := auth.Tokenize(Id, cfg.jwtsecret)
 
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, err.Error())
