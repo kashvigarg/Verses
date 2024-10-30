@@ -13,7 +13,7 @@ import (
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO users(name,Email,passwd,id,created_at,updated_at, username) VALUES($1,$2,$3,$4,$5,$6, $7)
-RETURNING name, email, passwd, id, created_at, updated_at, is_red, followers, followees, username
+RETURNING name, email, passwd, username, id, created_at, updated_at, is_red, followers, followees
 `
 
 type CreateUserParams struct {
@@ -41,19 +41,19 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.Name,
 		&i.Email,
 		&i.Passwd,
+		&i.Username,
 		&i.ID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.IsRed,
 		&i.Followers,
 		&i.Followees,
-		&i.Username,
 	)
 	return i, err
 }
 
 const getUser = `-- name: GetUser :one
-SELECT name, email, passwd, id, created_at, updated_at, is_red, followers, followees, username FROM users WHERE Email=$1
+SELECT name, email, passwd, username, id, created_at, updated_at, is_red, followers, followees FROM users WHERE Email=$1
 `
 
 func (q *Queries) GetUser(ctx context.Context, email string) (User, error) {
@@ -63,19 +63,19 @@ func (q *Queries) GetUser(ctx context.Context, email string) (User, error) {
 		&i.Name,
 		&i.Email,
 		&i.Passwd,
+		&i.Username,
 		&i.ID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.IsRed,
 		&i.Followers,
 		&i.Followees,
-		&i.Username,
 	)
 	return i, err
 }
 
 const getUserbyId = `-- name: GetUserbyId :one
-SELECT name, email, passwd, id, created_at, updated_at, is_red, followers, followees, username FROM users WHERE id=$1
+SELECT name, email, passwd, username, id, created_at, updated_at, is_red, followers, followees FROM users WHERE id=$1
 `
 
 func (q *Queries) GetUserbyId(ctx context.Context, id pgtype.UUID) (User, error) {
@@ -85,13 +85,13 @@ func (q *Queries) GetUserbyId(ctx context.Context, id pgtype.UUID) (User, error)
 		&i.Name,
 		&i.Email,
 		&i.Passwd,
+		&i.Username,
 		&i.ID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.IsRed,
 		&i.Followers,
 		&i.Followees,
-		&i.Username,
 	)
 	return i, err
 }
@@ -120,7 +120,7 @@ func (q *Queries) Is_Username(ctx context.Context, username string) (bool, error
 
 const is_red = `-- name: Is_red :one
 INSERT INTO users(is_red) VALUES($1)
-RETURNING name, email, passwd, id, created_at, updated_at, is_red, followers, followees, username
+RETURNING name, email, passwd, username, id, created_at, updated_at, is_red, followers, followees
 `
 
 func (q *Queries) Is_red(ctx context.Context, isRed bool) (User, error) {
@@ -130,20 +130,20 @@ func (q *Queries) Is_red(ctx context.Context, isRed bool) (User, error) {
 		&i.Name,
 		&i.Email,
 		&i.Passwd,
+		&i.Username,
 		&i.ID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.IsRed,
 		&i.Followers,
 		&i.Followees,
-		&i.Username,
 	)
 	return i, err
 }
 
 const updateUser = `-- name: UpdateUser :one
 UPDATE users SET name=$2 ,passwd=$3 ,updated_at=$4 WHERE id=$1
-RETURNING name, email, passwd, id, created_at, updated_at, is_red, followers, followees, username
+RETURNING name, email, passwd, username, id, created_at, updated_at, is_red, followers, followees
 `
 
 type UpdateUserParams struct {
@@ -165,13 +165,13 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.Name,
 		&i.Email,
 		&i.Passwd,
+		&i.Username,
 		&i.ID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.IsRed,
 		&i.Followers,
 		&i.Followees,
-		&i.Username,
 	)
 	return i, err
 }

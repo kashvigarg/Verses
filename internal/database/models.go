@@ -27,6 +27,15 @@ type Follow struct {
 	FolloweeID pgtype.UUID
 }
 
+type Notification struct {
+	ID          pgtype.UUID
+	UserID      pgtype.UUID
+	Actors      []string
+	GeneratedAt pgtype.Timestamp
+	Type        string
+	Read        bool
+}
+
 type PostLike struct {
 	ProseID pgtype.UUID
 	UserID  pgtype.UUID
@@ -57,11 +66,11 @@ type User struct {
 	Name      string
 	Email     string
 	Passwd    []byte
+	Username  string
 	ID        pgtype.UUID
 	CreatedAt pgtype.Timestamp
 	UpdatedAt pgtype.Timestamp
 	IsRed     bool
 	Followers int32
 	Followees int32
-	Username  string
 }

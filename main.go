@@ -102,6 +102,9 @@ func main() {
 	s.Put("/users", apicfg.updateUser)
 	s.Post("/users/{username}/toggle_follow", apicfg.toggleFollow)
 	s.Delete("/prose/{proseId}", apicfg.DeleteProse)
+	s.Get("/notifications", apicfg.Notifications)
+	s.Post("/notifications/{notificationid}/mark_as_read", apicfg.ReadNotification)
+	s.Post("/notifications/mark_as_read", apicfg.ReadNotifications)
 	s.Post("/gold/webhooks", apicfg.is_gold)
 	t.Get("/metrics", apicfg.metrics)
 

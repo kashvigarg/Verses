@@ -103,6 +103,11 @@ func (cfg *apiconfig) toggleFollow(w http.ResponseWriter, r *http.Request) {
 	}
 	tx.Commit(r.Context())
 	tx = nil
+
+	if followed {
+		go cfg.FollowNotification(followee_id, pgUUID)
+	}
+
 	respondWithJson(w, http.StatusAccepted, togglefollow{
 		Followers_count: int(followers),
 		Followed:        followed,
