@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -117,14 +118,6 @@ func (cfg *apiconfig) postProse(w http.ResponseWriter, r *http.Request) {
 		Mine:       true,
 	})
 
-	/*timelineuuid := uuid.New().String()
-	var timelineId pgtype.UUID
-
-	err = timelineId.Scan(timelineuuid)
-	if err != nil {
-		fmt.Println("Error setting timline id:", err)
-	}*/
-
 	err = qtx.InserinTimeline(r.Context(), database.InserinTimelineParams{
 		ProseID: post_pgUUID,
 		UserID:  pgUUID,
@@ -147,48 +140,44 @@ func (cfg *apiconfig) postProse(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, "couldn't commit the transaction")
 	}
 
-	go func(p Prose) {
-
-		u, err := cfg.DB.GetUserbyId(r.Context(), p.Userid)
-
-		if err != nil {
-			respondWithError(w, http.StatusInternalServerError, "couldn't fetch the user")
-			return
-		}
-
-		p.User.Email = u.Email
-		p.User.ID = u.ID
-		p.User.Name = u.Name
-		p.User.Username = u.Username
-		p.Mine = false
-
-		tl, err := cfg.fanoutprose(r.Context(), p)
-		if err != nil {
-			respondWithError(w, http.StatusInternalServerError, "couldn't fanout the post")
-			return
-		}
-
-		for _, i := range tl {
-			fmt.Println(i)
-			//TODO: Broadcast
-		}
-
-	}(tl.Post)
+	go cfg.prosecreated(tl.Post)
 
 }
 
-func (cfg *apiconfig) fanoutprose(ctx context.Context, p Prose) ([]database.FetchTimelineItemsRow, error) {
+func (cfg *apiconfig) prosecreated(p Prose) {
+	u, err := cfg.DB.GetUserbyId(context.Background(), p.Userid)
 
-	items, err := cfg.DB.FetchTimelineItems(ctx, database.FetchTimelineItemsParams{
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	p.User.Email = u.Email
+	p.User.ID = u.ID
+	p.User.Name = u.Name
+	p.User.Username = u.Username
+	p.Mine = false
+
+	go cfg.fanoutprose(p)
+	go cfg.notifypostmentions(p)
+}
+
+func (cfg *apiconfig) fanoutprose(p Prose) {
+
+	items, err := cfg.DB.FetchTimelineItems(context.Background(), database.FetchTimelineItemsParams{
 		ProseID:    p.ID,
 		FolloweeID: p.Userid,
 	})
 
 	if err != nil {
-		return []database.FetchTimelineItemsRow{}, err
+		log.Println(err)
+		return
 	}
 
-	return items, nil
+	for _, i := range items {
+		fmt.Println(i)
+		//TODO: Broadcast
+	}
 
 }
 

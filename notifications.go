@@ -12,7 +12,8 @@ import (
 
 type Notification struct {
 	ID           pgtype.UUID      `json:"id"`
-	User_id      pgtype.UUID      `json:"user_id"`
+	Userid       pgtype.UUID      `json:"userid"`
+	Proseid      pgtype.UUID      `json:"proseid"`
 	Actors       []string         `json:"actors"`
 	Generated_at pgtype.Timestamp `json:"generated_at"`
 	Read         bool             `json:"read"`
@@ -80,7 +81,7 @@ func (cfg *apiconfig) Notifications(w http.ResponseWriter, r *http.Request) {
 	for _, k := range notifications {
 		Notifications = append(Notifications, Notification{
 			ID:           k.ID,
-			User_id:      k.UserID,
+			Userid:       k.UserID,
 			Actors:       k.Actors,
 			Generated_at: k.GeneratedAt,
 			Type:         k.Type,

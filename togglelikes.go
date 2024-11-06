@@ -109,6 +109,7 @@ func (cfg *apiconfig) toggleLike(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, "error commmiting the transaction:"+err.Error())
 	}
 	tx = nil
+
 	respondWithJson(w, http.StatusAccepted, togglelike{
 		Likes_count: int(likes_count),
 		Liked:       liked,

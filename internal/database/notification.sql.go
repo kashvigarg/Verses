@@ -12,7 +12,7 @@ import (
 )
 
 const getNotifications = `-- name: GetNotifications :many
-SELECT id, user_id, actors, type, read, generated_at FROM notifications WHERE user_id=$1
+SELECT id, user_id,prose_id, actors, type, read, generated_at FROM notifications WHERE user_id=$1
 AND $2::TIMESTAMP IS NULL OR generated_at < $2
 ORDER BY generated_at DESC
 LIMIT $3
@@ -27,6 +27,7 @@ type GetNotificationsParams struct {
 type GetNotificationsRow struct {
 	ID          pgtype.UUID
 	UserID      pgtype.UUID
+	ProseID     pgtype.UUID
 	Actors      []string
 	Type        string
 	Read        bool
@@ -45,6 +46,7 @@ func (q *Queries) GetNotifications(ctx context.Context, arg GetNotificationsPara
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,
+			&i.ProseID,
 			&i.Actors,
 			&i.Type,
 			&i.Read,
@@ -58,6 +60,39 @@ func (q *Queries) GetNotifications(ctx context.Context, arg GetNotificationsPara
 		return nil, err
 	}
 	return items, nil
+}
+
+const insertCommentNotification = `-- name: InsertCommentNotification :one
+INSERT INTO notifications(id, user_id,actors,type,prose_id,generated_at ) VALUES($1,$2,$3, 'comment',$4,$5) ON CONFLICT (user_id,actors,type,read) 
+DO UPDATE SET actors= append_array(actors,$3), generated_at=$5
+RETURNING id,generated_at,actors
+`
+
+type InsertCommentNotificationParams struct {
+	ID          pgtype.UUID
+	UserID      pgtype.UUID
+	Actors      []string
+	ProseID     pgtype.UUID
+	GeneratedAt pgtype.Timestamp
+}
+
+type InsertCommentNotificationRow struct {
+	ID          pgtype.UUID
+	GeneratedAt pgtype.Timestamp
+	Actors      []string
+}
+
+func (q *Queries) InsertCommentNotification(ctx context.Context, arg InsertCommentNotificationParams) (InsertCommentNotificationRow, error) {
+	row := q.db.QueryRow(ctx, insertCommentNotification,
+		arg.ID,
+		arg.UserID,
+		arg.Actors,
+		arg.ProseID,
+		arg.GeneratedAt,
+	)
+	var i InsertCommentNotificationRow
+	err := row.Scan(&i.ID, &i.GeneratedAt, &i.Actors)
+	return i, err
 }
 
 const insertNotification = `-- name: InsertNotification :exec

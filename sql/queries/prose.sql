@@ -22,7 +22,7 @@ CASE WHEN author_id=$1 THEN true ELSE false END AS Mine,
 CASE WHEN Likes.user_id IS NOT NULL THEN true ELSE false END AS Liked
 FROM prose LEFT JOIN post_likes AS Likes 
 ON Likes.user_id=$1 AND Likes.prose_id=prose.id 
-WHERE prose.user_id=(SELECT id FROM users WHERE username=$2)
+WHERE prose.author_id=(SELECT id FROM users WHERE username=$2)
 AND
 $3::TIMESTAMP IS NULL OR prose.created_at < $3
 ORDER BY prose.created_at DESC,prose.id DESC

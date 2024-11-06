@@ -87,6 +87,8 @@ func main() {
 	})
 
 	s.Get("/healthz", apireadiness)
+	s.Post("/users", apicfg.createUser)
+	s.Post("/login", apicfg.userLogin)
 	s.Post("/prose", apicfg.postProse)
 	s.Get("/{username}/prose", apicfg.getProse)
 	s.Get("/prose/{proseId}", apicfg.ProsebyId)
@@ -95,8 +97,6 @@ func main() {
 	s.Post("/{proseid}/comments", apicfg.postComment)
 	s.Get("/{proseid}/comments", apicfg.Getcomments)
 	s.Post("/comments/{commentid}/togglelike", apicfg.toggCommentLike)
-	s.Post("/users", apicfg.createUser)
-	s.Post("/login", apicfg.userLogin)
 	s.Post("/refresh", apicfg.verifyRefresh)
 	s.Post("/revoke", apicfg.revokeToken)
 	s.Put("/users", apicfg.updateUser)

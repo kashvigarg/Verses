@@ -21,7 +21,7 @@ func Tokenize(id uuid.UUID, secret_key string) (string, error) {
 	claims := &jwt.RegisteredClaims{
 		Issuer:    "verses-access",
 		IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
-		ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(time.Duration(60*60) * time.Second)), // 1 hour
+		ExpiresAt: jwt.NewNumericDate(time.Now().UTC().AddDate(0, 0, 1)), // 1 day
 		Subject:   id.String(),
 	}
 

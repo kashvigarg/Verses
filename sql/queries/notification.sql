@@ -1,5 +1,5 @@
 -- name: GetNotifications :many
-SELECT id, user_id, actors, type, read, generated_at FROM notifications WHERE user_id=$1
+SELECT id, user_id,prose_id, actors, type, read, generated_at FROM notifications WHERE user_id=$1
 AND $2::TIMESTAMP IS NULL OR generated_at < $2
 ORDER BY generated_at DESC
 LIMIT $3;
@@ -26,3 +26,8 @@ UPDATE notifications
 SET actors= append_array(actors,$1::VARCHAR) 
 AND generated_at=$2 
 WHERE id=$3 RETURNING actors;
+
+-- name: InsertCommentNotification :one
+INSERT INTO notifications(id, user_id,actors,type,prose_id,generated_at ) VALUES($1,$2,$3, 'comment',$4,$5) ON CONFLICT (user_id,actors,type,read) 
+DO UPDATE SET actors= append_array(actors,$3), generated_at=$5
+RETURNING id,generated_at,actors;

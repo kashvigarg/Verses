@@ -30,6 +30,7 @@ type Follow struct {
 type Notification struct {
 	ID          pgtype.UUID
 	UserID      pgtype.UUID
+	ProseID     pgtype.UUID
 	Actors      []string
 	GeneratedAt pgtype.Timestamp
 	Type        string

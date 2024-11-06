@@ -2,6 +2,7 @@
 CREATE TABLE notifications(
     id uuid PRIMARY KEY,
     user_id uuid NOT NULL,
+    prose_id uuid UNIQUE,
     actors VARCHAR [] ,
     generated_at TIMESTAMP NOT NULL,
     type VARCHAR(12) NOT NULL,

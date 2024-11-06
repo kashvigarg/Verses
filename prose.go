@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -29,7 +30,12 @@ func (cfg *apiconfig) getProse(w http.ResponseWriter, r *http.Request) {
 
 	beforestr := r.URL.Query().Get("before")
 	if beforestr != "" {
-		err = before.Scan(beforestr)
+		parsedTime, err := time.Parse(time.RFC3339, beforestr)
+		if err != nil {
+			respondWithError(w, http.StatusBadRequest, "Invalid timestamp format")
+			return
+		}
+		err = before.Scan(parsedTime)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err.Error())
 		}
@@ -50,11 +56,6 @@ func (cfg *apiconfig) getProse(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	err = before.Scan(beforestr)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
 
 	posts, err := cfg.DB.GetsProseAll(r.Context(), database.GetsProseAllParams{
 		AuthorID: pgUUID,
@@ -64,7 +65,7 @@ func (cfg *apiconfig) getProse(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Prose couldn't be fetched")
+		respondWithError(w, http.StatusInternalServerError, "Prose couldn't be fetched:"+err.Error())
 		return
 	}
 
@@ -102,14 +103,14 @@ func (cfg *apiconfig) ProsebyId(w http.ResponseWriter, r *http.Request) {
 	proseidstr := chi.URLParam(r, "proseId")
 	var prose_pgUUID pgtype.UUID
 
-	err = prose_pgUUID.Scan(authorid)
+	err = prose_pgUUID.Scan(proseidstr)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 	var pgUUID pgtype.UUID
 
-	err = pgUUID.Scan(proseidstr)
+	err = pgUUID.Scan(authorid)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -121,7 +122,7 @@ func (cfg *apiconfig) ProsebyId(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Prose couldn't be fetched")
+		respondWithError(w, http.StatusInternalServerError, "Prose couldn't be fetched:"+err.Error())
 		return
 	}
 

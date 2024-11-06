@@ -109,7 +109,7 @@ func (cfg *apiconfig) FollowNotification(followeeid, followerid pgtype.UUID) {
 
 	notification.ID = notificationid
 	notification.Generated_at = pgtype_generated_at
-	notification.User_id = followeeid
+	notification.Userid = followeeid
 	notification.Type = "follow"
 
 	//realtime broadcast

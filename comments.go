@@ -21,6 +21,7 @@ type Comment struct {
 	Likes_count int              `json:"likes,omitempty"`
 	Liked       bool             `json:"liked,omitempty"`
 	Mine        bool             `json:"mine,omitempty"`
+	User        *User            `json:"user,omitempty"`
 	Body        string           `json:"body"`
 }
 
@@ -107,12 +108,18 @@ func (cfg *apiconfig) postComment(w http.ResponseWriter, r *http.Request) {
 	}
 	tx = nil
 
-	respondWithJson(w, http.StatusAccepted, Comment{
-		Id:         comment.ID,
-		Body:       comment.Body,
-		Proseid:    comment.ProseID,
-		Created_at: comment.CreatedAt,
-	})
+	var c Comment
+
+	c.Body = comment.Body
+	c.Created_at = comment.CreatedAt
+	c.Proseid = comment.ProseID
+	c.Id = comment.ID
+	c.Userid = comment.UserID
+	c.Mine = true
+
+	go cfg.BroadcastComment(c)
+
+	respondWithJson(w, http.StatusAccepted, c)
 }
 
 func (cfg *apiconfig) Getcomments(w http.ResponseWriter, r *http.Request) {
