@@ -1,8 +1,10 @@
 package main
 
 import (
+	"mime"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -13,11 +15,16 @@ import (
 type Notification struct {
 	ID           pgtype.UUID      `json:"id"`
 	Userid       pgtype.UUID      `json:"userid"`
-	Proseid      pgtype.UUID      `json:"proseid"`
+	Proseid      pgtype.UUID      `json:"proseid`
 	Actors       []string         `json:"actors"`
 	Generated_at pgtype.Timestamp `json:"generated_at"`
 	Read         bool             `json:"read"`
 	Type         string           `json:"type"`
+}
+
+type notificationclient struct {
+	notifications chan Notification
+	Userid        pgtype.UUID
 }
 
 func (cfg *apiconfig) Notifications(w http.ResponseWriter, r *http.Request) {
@@ -34,11 +41,28 @@ func (cfg *apiconfig) Notifications(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var userid pgtype.UUID
+	err = userid.Scan(useridstr)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if content_type, _, err := mime.ParseMediaType(r.Header.Get("Accept")); err == nil && content_type == "text/event-stream" {
+		cfg.subscribeTonotifications(w, r.Context(), userid)
+		return
+	}
+
 	var before pgtype.Timestamp
 
 	beforestr := r.URL.Query().Get("before")
 	if beforestr != "" {
-		err = before.Scan(beforestr)
+		parsedTime, err := time.Parse(time.RFC3339, beforestr)
+		if err != nil {
+			respondWithError(w, http.StatusBadRequest, "Invalid timestamp format")
+			return
+		}
+		err = before.Scan(parsedTime)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err.Error())
 		}
@@ -51,13 +75,6 @@ func (cfg *apiconfig) Notifications(w http.ResponseWriter, r *http.Request) {
 	limit, err := strconv.ParseInt(limitstr, 10, 32)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
-	}
-
-	var userid pgtype.UUID
-	err = userid.Scan(useridstr)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, err.Error())
-		return
 	}
 
 	err = before.Scan(beforestr)
@@ -168,4 +185,16 @@ func (cfg *apiconfig) ReadNotifications(w http.ResponseWriter, r *http.Request) 
 	}
 
 	respondWithJson(w, http.StatusNoContent, "Notifications Read")
+}
+
+func (cfg *apiconfig) Broadcastnotifications(n Notification) {
+
+	cfg.Clients.timelineClients.Range(func(key, _ any) bool {
+		client := key.(*notificationclient)
+		if client.Userid == n.Userid {
+			client.notifications <- n
+		}
+		return true
+	})
+
 }

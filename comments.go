@@ -1,7 +1,10 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
+	"log"
+	"mime"
 	"net/http"
 	"strconv"
 	"strings"
@@ -23,6 +26,12 @@ type Comment struct {
 	Mine        bool             `json:"mine,omitempty"`
 	User        *User            `json:"user,omitempty"`
 	Body        string           `json:"body"`
+}
+
+type commentclient struct {
+	comments chan Comment
+	Proseid  pgtype.UUID
+	Userid   pgtype.UUID
 }
 
 func (cfg *apiconfig) postComment(w http.ResponseWriter, r *http.Request) {
@@ -117,7 +126,7 @@ func (cfg *apiconfig) postComment(w http.ResponseWriter, r *http.Request) {
 	c.Userid = comment.UserID
 	c.Mine = true
 
-	go cfg.BroadcastComment(c)
+	go cfg.Commentcreation(c)
 
 	respondWithJson(w, http.StatusAccepted, c)
 }
@@ -133,6 +142,26 @@ func (cfg *apiconfig) Getcomments(w http.ResponseWriter, r *http.Request) {
 	authorid, err := auth.ValidateToken(token, cfg.jwtsecret)
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+	proseidstr := chi.URLParam(r, "proseid")
+
+	var pgUUID pgtype.UUID
+	err = pgUUID.Scan(authorid)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	var proseid pgtype.UUID
+	err = proseid.Scan(proseidstr)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if content_type, _, err := mime.ParseMediaType(r.Header.Get("Accept")); err == nil && content_type == "text/event-stream" {
+		cfg.subscribeTocomments(w, r.Context(), pgUUID, proseid)
 		return
 	}
 
@@ -152,22 +181,6 @@ func (cfg *apiconfig) Getcomments(w http.ResponseWriter, r *http.Request) {
 		limitstr = "10"
 	}
 	limit, err := strconv.Atoi(limitstr)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	proseidstr := chi.URLParam(r, "proseid")
-
-	var pgUUID pgtype.UUID
-	err = pgUUID.Scan(authorid)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	var proseid pgtype.UUID
-	err = proseid.Scan(proseidstr)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -198,5 +211,39 @@ func (cfg *apiconfig) Getcomments(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondWithJson(w, http.StatusOK, Comments)
+
+}
+
+func (cfg *apiconfig) Commentcreation(c Comment) {
+
+	user, err := cfg.DB.GetUserbyId(context.Background(), c.Userid)
+	if err != nil {
+		log.Println("error fetching the user from the id:" + err.Error())
+		return
+	}
+
+	c.User = &User{
+		ID:       user.ID,
+		Username: user.Username,
+		Name:     user.Name,
+		Email:    user.Email,
+		Is_red:   user.IsRed,
+	}
+	c.Mine = false
+
+	go cfg.CommentNotification(c)
+	go cfg.notifycommentmentions(c)
+	go cfg.Broadcastcomments(c)
+}
+
+func (cfg *apiconfig) Broadcastcomments(c Comment) {
+
+	cfg.Clients.commentClients.Range(func(key, _ any) bool {
+		client := key.(*commentclient)
+		if client.Proseid == c.Proseid && client.Userid != c.Userid {
+			client.comments <- c
+		}
+		return true
+	})
 
 }

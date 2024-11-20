@@ -10,28 +10,6 @@ import (
 	"github.com/jaydee029/Verses/internal/database"
 )
 
-func (cfg *apiconfig) BroadcastComment(c Comment) {
-
-	user, err := cfg.DB.GetUserbyId(context.Background(), c.Userid)
-	if err != nil {
-		log.Println("error fetching the user from the id:" + err.Error())
-		return
-	}
-
-	c.User = &User{
-		ID:       user.ID,
-		Username: user.Username,
-		Name:     user.Name,
-		Email:    user.Email,
-		Is_red:   user.IsRed,
-	}
-	c.Mine = false
-
-	go cfg.CommentNotification(c)
-	go cfg.notifycommentmentions(c)
-	//broadcast comment
-}
-
 func (cfg *apiconfig) CommentNotification(c Comment) {
 
 	nid := uuid.New()
@@ -48,7 +26,7 @@ func (cfg *apiconfig) CommentNotification(c Comment) {
 		return
 	}
 
-	_, err := cfg.DB.InsertCommentNotification(context.Background(), database.InsertCommentNotificationParams{
+	notification, err := cfg.DB.InsertCommentNotification(context.Background(), database.InsertCommentNotificationParams{
 		UserID:      c.Userid,
 		ProseID:     c.Proseid,
 		GeneratedAt: generated_at_pgtype,
@@ -60,5 +38,15 @@ func (cfg *apiconfig) CommentNotification(c Comment) {
 		log.Println("error while inserting comment notifications:" + err.Error())
 		return
 	}
+	var n Notification
+
+	n.ID = nid_pgtype
+	n.Actors = notification.Actors
+	n.Userid = c.Userid
+	n.Proseid = c.Proseid
+	n.Generated_at = notification.GeneratedAt
+	n.Type = "comment"
+
+	go cfg.Broadcastnotifications(n)
 
 }

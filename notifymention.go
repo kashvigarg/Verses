@@ -40,9 +40,32 @@ func (cfg *apiconfig) notifycommentmentions(c Comment) {
 		log.Println(err)
 		return
 	}
-	println(notifications)
-	//broadcast comment mention notifications
+
+	for _, k := range notifications {
+		var n Notification
+
+		n.ID = k.ID
+		n.Userid = k.UserID
+		n.Generated_at = k.GeneratedAt
+		n.Actors = k.Actors
+		n.Type = "comment_mention"
+
+		go cfg.Broadcastnotifications(n)
+
+	}
 }
+
+/*
+type Notification struct {
+	ID           pgtype.UUID      `json:"id"`
+	Userid       pgtype.UUID      `json:"userid"`
+	Proseid      pgtype.UUID      `json:"proseid"`
+	Actors       []string         `json:"actors"`
+	Generated_at pgtype.Timestamp `json:"generated_at"`
+	Read         bool             `json:"read"`
+	Type         string           `json:"type"`
+}
+*/
 
 func (cfg *apiconfig) notifypostmentions(p Prose) {
 
@@ -73,8 +96,19 @@ func (cfg *apiconfig) notifypostmentions(p Prose) {
 		log.Println(err)
 		return
 	}
-	println(notifications)
-	//broadcast mention notifications
+
+	for _, k := range notifications {
+		var n Notification
+
+		n.ID = k.ID
+		n.Userid = k.UserID
+		n.Generated_at = k.GeneratedAt
+		n.Actors = []string{p.User.Username}
+		n.Type = "post_mention"
+
+		go cfg.Broadcastnotifications(n)
+
+	}
 }
 
 func mentions(content string) ([]string, error) {

@@ -140,11 +140,11 @@ func (cfg *apiconfig) postProse(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, "couldn't commit the transaction")
 	}
 
-	go cfg.prosecreated(tl.Post)
+	go cfg.prosecreation(tl.Post)
 
 }
 
-func (cfg *apiconfig) prosecreated(p Prose) {
+func (cfg *apiconfig) prosecreation(p Prose) {
 	u, err := cfg.DB.GetUserbyId(context.Background(), p.Userid)
 
 	if err != nil {
@@ -174,9 +174,12 @@ func (cfg *apiconfig) fanoutprose(p Prose) {
 		return
 	}
 
-	for _, i := range items {
-		fmt.Println(i)
-		//TODO: Broadcast
+	for _, k := range items {
+		var ti timeline_item
+		ti.Id = int(k.ID)
+		ti.Userid = k.UserID
+		ti.Post = p
+		go cfg.Broadcasttimeline(ti)
 	}
 
 }

@@ -112,6 +112,5 @@ func (cfg *apiconfig) FollowNotification(followeeid, followerid pgtype.UUID) {
 	notification.Userid = followeeid
 	notification.Type = "follow"
 
-	//realtime broadcast
-
+	go cfg.Broadcastnotifications(notification)
 }

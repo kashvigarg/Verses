@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sync"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/lib/pq"
@@ -17,12 +18,18 @@ import (
 	"github.com/joho/godotenv"
 )
 
+type Clients struct {
+	timelineClients     sync.Map
+	notificationClients sync.Map
+	commentClients      sync.Map
+}
 type apiconfig struct {
 	fileservercounts int
 	jwtsecret        string
 	apiKey           string
 	DB               *database.Queries
 	DBpool           *pgxpool.Pool
+	Clients          *Clients
 }
 
 //go:embed static/*
@@ -61,6 +68,11 @@ func main() {
 		apiKey:           os.Getenv("GOLD_KEY"),
 		DB:               queries,
 		DBpool:           dbcon,
+		Clients: &Clients{
+			timelineClients:     sync.Map{},
+			commentClients:      sync.Map{},
+			notificationClients: sync.Map{},
+		},
 	}
 
 	port := os.Getenv("PORT")

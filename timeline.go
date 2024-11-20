@@ -1,8 +1,10 @@
 package main
 
 import (
+	"mime"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	auth "github.com/jaydee029/Verses/internal/auth"
@@ -13,6 +15,11 @@ type timeline_item struct {
 	Id     int         `json:"id"`
 	Userid pgtype.UUID `json:"userid,omitempty"`
 	Post   Prose       `json:"prose"`
+}
+
+type timelineclient struct {
+	timeline chan timeline_item
+	Userid   pgtype.UUID
 }
 
 func (cfg *apiconfig) timeline(w http.ResponseWriter, r *http.Request) {
@@ -28,11 +35,28 @@ func (cfg *apiconfig) timeline(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var pgUUID pgtype.UUID
+	err = pgUUID.Scan(authorid)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if content_type, _, err := mime.ParseMediaType(r.Header.Get("Accept")); err == nil && content_type == "text/event-stream" {
+		cfg.subscribeTotimeline(w, r.Context(), pgUUID)
+		return
+	}
+
 	var before pgtype.Timestamp
 
 	beforestr := r.URL.Query().Get("before")
 	if beforestr != "" {
-		err = before.Scan(beforestr)
+		parsedTime, err := time.Parse(time.RFC3339, beforestr)
+		if err != nil {
+			respondWithError(w, http.StatusBadRequest, "Invalid timestamp format")
+			return
+		}
+		err = before.Scan(parsedTime)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err.Error())
 		}
@@ -47,12 +71,6 @@ func (cfg *apiconfig) timeline(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 	}
 
-	var pgUUID pgtype.UUID
-	err = pgUUID.Scan(authorid)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
 	err = before.Scan(beforestr)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
@@ -91,4 +109,16 @@ func (cfg *apiconfig) timeline(w http.ResponseWriter, r *http.Request) {
 		respondWithJson(w, http.StatusOK, timeline)
 
 	}
+}
+
+func (cfg *apiconfig) Broadcasttimeline(ti timeline_item) {
+
+	cfg.Clients.timelineClients.Range(func(key, _ any) bool {
+		client := key.(*timelineclient)
+		if client.Userid == ti.Userid {
+			client.timeline <- ti
+		}
+		return true
+	})
+
 }
