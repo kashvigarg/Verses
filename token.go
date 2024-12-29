@@ -12,6 +12,10 @@ import (
 	"github.com/jaydee029/Verses/internal/database"
 )
 
+type Token struct {
+	Token string `json:"token"`
+}
+
 func (cfg *apiconfig) revokeToken(w http.ResponseWriter, r *http.Request) {
 
 	token, err := auth.BearerHeader(r.Header)

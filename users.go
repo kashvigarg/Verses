@@ -21,31 +21,30 @@ type Input struct {
 	Username string `json:"username"`
 }
 type User struct {
-	ID       pgtype.UUID `json:"id"`
-	Email    string      `json:"email"`
-	Name     string      `json:"name"`
-	Username string      `json:"username"`
-	Is_red   bool        `json:"is_chirpy_red,omitempty"`
+	ID        pgtype.UUID `json:"id"`
+	Email     string      `json:"email"`
+	Name      string      `json:"name"`
+	Username  string      `json:"username"`
+	Is_red    bool        `json:"is_red,omitempty"`
+	Follower  bool        `json:"follower"`
+	Following bool        `json:"following"`
 }
 type res_login struct {
 	Email         string `json:"email"`
 	Token         string `json:"token"`
 	Refresh_token string `json:"refresh_token"`
 }
-type User_Input struct {
+type UserInput struct {
 	Name     string `json:"name"`
 	Password string `json:"password"`
 	Email    string `json:"email"`
 	Username string `json:"username"`
 }
-type Token struct {
-	Token string `json:"token"`
-}
 
 func (cfg *apiconfig) createUser(w http.ResponseWriter, r *http.Request) {
 
 	decoder := json.NewDecoder(r.Body)
-	params := User_Input{}
+	params := UserInput{}
 	err := decoder.Decode(&params)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "couldn't decode parameters")
@@ -55,6 +54,7 @@ func (cfg *apiconfig) createUser(w http.ResponseWriter, r *http.Request) {
 	err = validate.ValidateEmail(params.Email)
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, err.Error())
+		return
 	}
 
 	email_if_exist, err := cfg.DB.Is_Email(context.Background(), params.Email)
@@ -98,12 +98,14 @@ func (cfg *apiconfig) createUser(w http.ResponseWriter, r *http.Request) {
 	err = pgUUID.Scan(uuids)
 	if err != nil {
 		fmt.Println("Error setting UUID:", err)
+		return
 	}
 
 	var pgtime pgtype.Timestamp
 	err = pgtime.Scan(time.Now().UTC())
 	if err != nil {
 		fmt.Println("Error setting timestamp:", err)
+		return
 	}
 
 	user, err := cfg.DB.CreateUser(r.Context(), database.CreateUserParams{
@@ -149,6 +151,7 @@ func (cfg *apiconfig) userLogin(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, "Password doesn't match")
+		return
 	}
 
 	Userid, _ := uuid.FromBytes(user.ID.Bytes[:])
@@ -212,7 +215,7 @@ func (cfg *apiconfig) updateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	decoder := json.NewDecoder(r.Body)
-	params := User_Input{}
+	params := UserInput{}
 	err = decoder.Decode(&params)
 
 	if err != nil {

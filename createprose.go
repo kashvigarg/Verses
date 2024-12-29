@@ -129,7 +129,7 @@ func (cfg *apiconfig) postProse(w http.ResponseWriter, r *http.Request) {
 
 	var tl timeline_item
 
-	tl.Userid = pgUUID
+	//tl.Userid = pgUUID
 	tl.Post.ID = post_pgUUID
 	tl.Post.Mine = true
 	tl.Post.Userid = pgUUID

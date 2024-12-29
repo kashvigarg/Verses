@@ -15,7 +15,7 @@ import (
 type Notification struct {
 	ID           pgtype.UUID      `json:"id"`
 	Userid       pgtype.UUID      `json:"userid"`
-	Proseid      pgtype.UUID      `json:"proseid`
+	Proseid      pgtype.UUID      `json:"proseid"`
 	Actors       []string         `json:"actors"`
 	Generated_at pgtype.Timestamp `json:"generated_at"`
 	Read         bool             `json:"read"`
@@ -65,6 +65,7 @@ func (cfg *apiconfig) Notifications(w http.ResponseWriter, r *http.Request) {
 		err = before.Scan(parsedTime)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err.Error())
+			return
 		}
 	}
 	limitstr := r.URL.Query().Get("limit")
@@ -75,6 +76,7 @@ func (cfg *apiconfig) Notifications(w http.ResponseWriter, r *http.Request) {
 	limit, err := strconv.ParseInt(limitstr, 10, 32)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
 	}
 
 	err = before.Scan(beforestr)
@@ -91,6 +93,7 @@ func (cfg *apiconfig) Notifications(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
 	}
 
 	var Notifications []Notification

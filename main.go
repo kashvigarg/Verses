@@ -65,7 +65,7 @@ func main() {
 	apicfg := apiconfig{
 		fileservercounts: 0,
 		jwtsecret:        jwt_secret,
-		apiKey:           os.Getenv("GOLD_KEY"),
+		apiKey:           os.Getenv("RED_KEY"),
 		DB:               queries,
 		DBpool:           dbcon,
 		Clients: &Clients{
@@ -112,6 +112,8 @@ func main() {
 	s.Post("/refresh", apicfg.verifyRefresh)
 	s.Post("/revoke", apicfg.revokeToken)
 	s.Put("/users", apicfg.updateUser)
+	s.Get("/users/{username}", apicfg.getUser)
+	s.Get("/users", apicfg.getUsers)
 	s.Post("/users/{username}/toggle_follow", apicfg.toggleFollow)
 	s.Delete("/prose/{proseId}", apicfg.DeleteProse)
 	s.Get("/notifications", apicfg.Notifications)

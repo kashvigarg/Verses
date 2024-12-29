@@ -96,6 +96,103 @@ func (q *Queries) GetUserbyId(ctx context.Context, id pgtype.UUID) (User, error)
 	return i, err
 }
 
+const getUsers = `-- name: GetUsers :many
+SELECT Name, username, id, followers, followees ,
+CASE WHEN followees.follower_id THEN true ELSE false END AS follower,
+CASE WHEN followers.followee_id THEN true ELSE false END AS following
+FROM users LEFT JOIN follows as followers
+ON followers.followee_id=$1 AND followers.follower_id=id
+LEFT JOIN follows as followees
+ON followees.follower_id=$1 AND followees.followee_id=id
+WHERE username> $2 
+ORDER BY username ASC LIMIT $3
+`
+
+type GetUsersParams struct {
+	FolloweeID pgtype.UUID
+	Username   string
+	Limit      int32
+}
+
+type GetUsersRow struct {
+	Name      string
+	Username  string
+	ID        pgtype.UUID
+	Followers int32
+	Followees int32
+	Follower  bool
+	Following bool
+}
+
+func (q *Queries) GetUsers(ctx context.Context, arg GetUsersParams) ([]GetUsersRow, error) {
+	rows, err := q.db.Query(ctx, getUsers, arg.FolloweeID, arg.Username, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetUsersRow
+	for rows.Next() {
+		var i GetUsersRow
+		if err := rows.Scan(
+			&i.Name,
+			&i.Username,
+			&i.ID,
+			&i.Followers,
+			&i.Followees,
+			&i.Follower,
+			&i.Following,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUsersingle = `-- name: GetUsersingle :one
+SELECT Name, username, id, followers, followees ,
+CASE WHEN followees.follower_id THEN true ELSE false END AS follower,
+CASE WHEN followers.followee_id THEN true ELSE false END AS following
+FROM users LEFT JOIN follows as followers
+ON followers.followee_id=$1 AND followers.follower_id=id
+LEFT JOIN follows as followees
+ON followees.follower_id=$1 AND followees.followee_id=id
+WHERE username =$2
+`
+
+type GetUsersingleParams struct {
+	FolloweeID pgtype.UUID
+	Username   string
+}
+
+type GetUsersingleRow struct {
+	Name      string
+	Username  string
+	ID        pgtype.UUID
+	Followers int32
+	Followees int32
+	Follower  bool
+	Following bool
+}
+
+func (q *Queries) GetUsersingle(ctx context.Context, arg GetUsersingleParams) (GetUsersingleRow, error) {
+	row := q.db.QueryRow(ctx, getUsersingle, arg.FolloweeID, arg.Username)
+	var i GetUsersingleRow
+	err := row.Scan(
+		&i.Name,
+		&i.Username,
+		&i.ID,
+		&i.Followers,
+		&i.Followees,
+		&i.Follower,
+		&i.Following,
+	)
+	return i, err
+}
+
 const is_Email = `-- name: Is_Email :one
 SELECT EXISTS (SELECT 1 FROM users WHERE Email=$1)
 `
