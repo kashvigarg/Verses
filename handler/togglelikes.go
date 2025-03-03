@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"net/http"
@@ -14,7 +14,7 @@ type togglelike struct {
 	Likes_count int  `json:"likes_count"`
 }
 
-func (cfg *apiconfig) toggleLike(w http.ResponseWriter, r *http.Request) {
+func (cfg *handler) ToggleLike(w http.ResponseWriter, r *http.Request) {
 
 	proseidstr := chi.URLParam(r, "proseId")
 	token, err := auth.BearerHeader(r.Header)

@@ -1,8 +1,9 @@
-package main
+package handler
 
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"mime"
 	"net/http"
@@ -10,9 +11,11 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	auth "github.com/jaydee029/Verses/internal/auth"
 	"github.com/jaydee029/Verses/internal/database"
+	"github.com/jaydee029/Verses/pubsub"
 )
 
 type Comment struct {
@@ -28,13 +31,14 @@ type Comment struct {
 	Body        string           `json:"body"`
 }
 
+/*
 type commentclient struct {
 	comments chan Comment
 	Proseid  pgtype.UUID
 	Userid   pgtype.UUID
-}
+}*/
 
-func (cfg *apiconfig) postComment(w http.ResponseWriter, r *http.Request) {
+func (cfg *handler) PostComment(w http.ResponseWriter, r *http.Request) {
 
 	token, err := auth.BearerHeader(r.Header)
 	if err != nil {
@@ -131,7 +135,7 @@ func (cfg *apiconfig) postComment(w http.ResponseWriter, r *http.Request) {
 	respondWithJson(w, http.StatusAccepted, c)
 }
 
-func (cfg *apiconfig) Getcomments(w http.ResponseWriter, r *http.Request) {
+func (cfg *handler) Getcomments(w http.ResponseWriter, r *http.Request) {
 
 	token, err := auth.BearerHeader(r.Header)
 	if err != nil {
@@ -165,7 +169,7 @@ func (cfg *apiconfig) Getcomments(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	before := 0
+	var before int
 	beforestr := r.URL.Query().Get("before")
 
 	if beforestr != "" {
@@ -194,7 +198,8 @@ func (cfg *apiconfig) Getcomments(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Comments couldn't be fetched")
+		respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Comments couldn't be fetched: %v", err))
+		return
 	}
 
 	var Comments []Comment
@@ -214,7 +219,7 @@ func (cfg *apiconfig) Getcomments(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (cfg *apiconfig) Commentcreation(c Comment) {
+func (cfg *handler) Commentcreation(c Comment) {
 
 	user, err := cfg.DB.GetUserbyId(context.Background(), c.Userid)
 	if err != nil {
@@ -236,14 +241,19 @@ func (cfg *apiconfig) Commentcreation(c Comment) {
 	go cfg.Broadcastcomments(c)
 }
 
-func (cfg *apiconfig) Broadcastcomments(c Comment) {
-
-	cfg.Clients.commentClients.Range(func(key, _ any) bool {
-		client := key.(*commentclient)
-		if client.Proseid == c.Proseid && client.Userid != c.Userid {
-			client.comments <- c
-		}
-		return true
-	})
-
+func (cfg *handler) Broadcastcomments(c Comment) {
+	err := pubsub.Publish(cfg.pubsub, "comment_direct", "comment_item."+uuid.UUID(c.Proseid.Bytes).String(), c)
+	if err != nil {
+		log.Printf("error while publishing commment item: %v", err)
+		return
+	}
+	/*
+		cfg.Clients.commentClients.Range(func(key, _ any) bool {
+			client := key.(*commentclient)
+			if client.Proseid == c.Proseid && client.Userid != c.Userid {
+				client.comments <- c
+			}
+			return true
+		})
+	*/
 }

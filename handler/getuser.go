@@ -1,6 +1,7 @@
-package main
+package handler
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -10,7 +11,7 @@ import (
 	"github.com/jaydee029/Verses/internal/database"
 )
 
-func (cfg *apiconfig) getUser(w http.ResponseWriter, r *http.Request) {
+func (cfg *handler) GetUser(w http.ResponseWriter, r *http.Request) {
 
 	token, err := auth.BearerHeader(r.Header)
 	if err != nil {
@@ -44,15 +45,17 @@ func (cfg *apiconfig) getUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondWithJson(w, http.StatusOK, User{
-		Name:      user.Name,
-		Username:  user.Username,
-		ID:        user.ID,
-		Follower:  user.Follower,
-		Following: user.Following,
+		Name:         user.Name,
+		Username:     user.Username,
+		ID:           user.ID,
+		Follower:     user.Follower,
+		Follows_back: user.Following,
+		Followers:    int(user.Followers),
+		Following:    int(user.Followees),
 	})
 }
 
-func (cfg *apiconfig) getUsers(w http.ResponseWriter, r *http.Request) {
+func (cfg *handler) GetUsers(w http.ResponseWriter, r *http.Request) {
 
 	token, err := auth.BearerHeader(r.Header)
 	if err != nil {
@@ -88,12 +91,12 @@ func (cfg *apiconfig) getUsers(w http.ResponseWriter, r *http.Request) {
 
 	users, err := cfg.DB.GetUsers(r.Context(), database.GetUsersParams{
 		FolloweeID: pgUUID,
-		Username:   after,
+		Column2:    after,
 		Limit:      int32(limit),
 	})
 
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Users couldn't be retrieved")
+		respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Users couldn't be retrieved:%v", err))
 		return
 	}
 
@@ -101,11 +104,13 @@ func (cfg *apiconfig) getUsers(w http.ResponseWriter, r *http.Request) {
 
 	for _, user := range users {
 		Users = append(Users, User{
-			Name:      user.Name,
-			Username:  user.Username,
-			Follower:  user.Follower,
-			Following: user.Following,
-			ID:        user.ID,
+			Name:         user.Name,
+			Username:     user.Username,
+			Follower:     user.Follower,
+			Follows_back: user.Following,
+			Followers:    int(user.Followers),
+			Following:    int(user.Followees),
+			ID:           user.ID,
 		})
 	}
 

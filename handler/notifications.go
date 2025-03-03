@@ -1,15 +1,18 @@
-package main
+package handler
 
 import (
+	"log"
 	"mime"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	auth "github.com/jaydee029/Verses/internal/auth"
 	"github.com/jaydee029/Verses/internal/database"
+	"github.com/jaydee029/Verses/pubsub"
 )
 
 type Notification struct {
@@ -22,12 +25,13 @@ type Notification struct {
 	Type         string           `json:"type"`
 }
 
-type notificationclient struct {
-	notifications chan Notification
-	Userid        pgtype.UUID
-}
-
-func (cfg *apiconfig) Notifications(w http.ResponseWriter, r *http.Request) {
+/*
+	type notificationclient struct {
+		notifications chan Notification
+		Userid        pgtype.UUID
+	}
+*/
+func (cfg *handler) Notifications(w http.ResponseWriter, r *http.Request) {
 	token, err := auth.BearerHeader(r.Header)
 
 	if err != nil {
@@ -67,7 +71,12 @@ func (cfg *apiconfig) Notifications(w http.ResponseWriter, r *http.Request) {
 			respondWithError(w, http.StatusInternalServerError, err.Error())
 			return
 		}
+	} else {
+		before = pgtype.Timestamp{
+			Valid: false,
+		}
 	}
+
 	limitstr := r.URL.Query().Get("limit")
 	if limitstr == "" {
 		limitstr = "10"
@@ -79,11 +88,11 @@ func (cfg *apiconfig) Notifications(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = before.Scan(beforestr)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
+	// err = before.Scan(beforestr)
+	// if err != nil {
+	// 	respondWithError(w, http.StatusInternalServerError, err.Error())
+	// 	return
+	// }
 
 	notifications, err := cfg.DB.GetNotifications(r.Context(), database.GetNotificationsParams{
 		UserID:  userid,
@@ -112,7 +121,7 @@ func (cfg *apiconfig) Notifications(w http.ResponseWriter, r *http.Request) {
 	respondWithJson(w, http.StatusOK, Notifications)
 }
 
-func (cfg *apiconfig) ReadNotification(w http.ResponseWriter, r *http.Request) {
+func (cfg *handler) ReadNotification(w http.ResponseWriter, r *http.Request) {
 
 	token, err := auth.BearerHeader(r.Header)
 
@@ -159,7 +168,7 @@ func (cfg *apiconfig) ReadNotification(w http.ResponseWriter, r *http.Request) {
 	respondWithJson(w, http.StatusNoContent, "Notification Read")
 }
 
-func (cfg *apiconfig) ReadNotifications(w http.ResponseWriter, r *http.Request) {
+func (cfg *handler) ReadNotifications(w http.ResponseWriter, r *http.Request) {
 
 	token, err := auth.BearerHeader(r.Header)
 
@@ -190,14 +199,20 @@ func (cfg *apiconfig) ReadNotifications(w http.ResponseWriter, r *http.Request) 
 	respondWithJson(w, http.StatusNoContent, "Notifications Read")
 }
 
-func (cfg *apiconfig) Broadcastnotifications(n Notification) {
+func (cfg *handler) Broadcastnotifications(n Notification) {
 
-	cfg.Clients.timelineClients.Range(func(key, _ any) bool {
-		client := key.(*notificationclient)
-		if client.Userid == n.Userid {
-			client.notifications <- n
-		}
-		return true
-	})
+	err := pubsub.Publish(cfg.pubsub, "notification_direct", "notification_item."+uuid.UUID(n.Userid.Bytes).String(), n)
+	if err != nil {
+		log.Printf("error publishing notification item: %v", err)
+		return
+	}
+	/*
+		cfg.Clients.timelineClients.Range(func(key, _ any) bool {
+			client := key.(*notificationclient)
+			if client.Userid == n.Userid {
+				client.notifications <- n
+			}
+			return true
+		})*/
 
 }

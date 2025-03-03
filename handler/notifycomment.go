@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	"github.com/jaydee029/Verses/internal/database"
 )
 
-func (cfg *apiconfig) CommentNotification(c Comment) {
+func (cfg *handler) CommentNotification(c Comment) {
 
 	nid := uuid.New()
 	var nid_pgtype pgtype.UUID

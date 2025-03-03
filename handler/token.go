@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"encoding/json"
@@ -16,7 +16,7 @@ type Token struct {
 	Token string `json:"token"`
 }
 
-func (cfg *apiconfig) revokeToken(w http.ResponseWriter, r *http.Request) {
+func (cfg *handler) RevokeToken(w http.ResponseWriter, r *http.Request) {
 
 	token, err := auth.BearerHeader(r.Header)
 
@@ -44,7 +44,7 @@ func (cfg *apiconfig) revokeToken(w http.ResponseWriter, r *http.Request) {
 	respondWithJson(w, http.StatusOK, "Token Revoked")
 }
 
-func (cfg *apiconfig) verifyRefresh(w http.ResponseWriter, r *http.Request) {
+func (cfg *handler) VerifyRefresh(w http.ResponseWriter, r *http.Request) {
 
 	token, err := auth.BearerHeader(r.Header)
 
@@ -99,7 +99,7 @@ func (cfg *apiconfig) verifyRefresh(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (cfg *apiconfig) is_gold(w http.ResponseWriter, r *http.Request) {
+func (cfg *handler) Is_red(w http.ResponseWriter, r *http.Request) {
 	type user_struct struct {
 		User_id pgtype.UUID `json:"user_id"`
 	}

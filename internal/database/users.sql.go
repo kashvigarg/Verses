@@ -98,19 +98,19 @@ func (q *Queries) GetUserbyId(ctx context.Context, id pgtype.UUID) (User, error)
 
 const getUsers = `-- name: GetUsers :many
 SELECT Name, username, id, followers, followees ,
-CASE WHEN followees.follower_id THEN true ELSE false END AS follower,
-CASE WHEN followers.followee_id THEN true ELSE false END AS following
+CASE WHEN followees.follower_id IS NOT NULL THEN true ELSE false END AS follower,
+CASE WHEN followers.followee_id IS NOT NULL THEN true ELSE false END AS following 
 FROM users LEFT JOIN follows as followers
 ON followers.followee_id=$1 AND followers.follower_id=id
 LEFT JOIN follows as followees
 ON followees.follower_id=$1 AND followees.followee_id=id
-WHERE username> $2 
+WHERE $2::VARCHAR IS NULL or username> $2 
 ORDER BY username ASC LIMIT $3
 `
 
 type GetUsersParams struct {
 	FolloweeID pgtype.UUID
-	Username   string
+	Column2    string
 	Limit      int32
 }
 
@@ -125,7 +125,7 @@ type GetUsersRow struct {
 }
 
 func (q *Queries) GetUsers(ctx context.Context, arg GetUsersParams) ([]GetUsersRow, error) {
-	rows, err := q.db.Query(ctx, getUsers, arg.FolloweeID, arg.Username, arg.Limit)
+	rows, err := q.db.Query(ctx, getUsers, arg.FolloweeID, arg.Column2, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
@@ -154,8 +154,8 @@ func (q *Queries) GetUsers(ctx context.Context, arg GetUsersParams) ([]GetUsersR
 
 const getUsersingle = `-- name: GetUsersingle :one
 SELECT Name, username, id, followers, followees ,
-CASE WHEN followees.follower_id THEN true ELSE false END AS follower,
-CASE WHEN followers.followee_id THEN true ELSE false END AS following
+CASE WHEN followees.follower_id IS NOT NULL THEN true ELSE false END AS follower,
+CASE WHEN followers.followee_id IS NOT NULL THEN true ELSE false END AS following
 FROM users LEFT JOIN follows as followers
 ON followers.followee_id=$1 AND followers.follower_id=id
 LEFT JOIN follows as followees

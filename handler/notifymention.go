@@ -1,19 +1,19 @@
-package main
+package handler
 
 import (
 	"context"
 	"log"
-	"regexp"
-	"strings"
 	"time"
+
+	"github.com/jaydee029/Verses/utils"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jaydee029/Verses/internal/database"
 )
 
-func (cfg *apiconfig) notifycommentmentions(c Comment) {
+func (cfg *handler) notifycommentmentions(c Comment) {
 
-	mentionedusers, err := mentions(c.Body)
+	mentionedusers, err := utils.Mentions(c.Body)
 	if err != nil {
 		log.Println(err)
 		return
@@ -67,9 +67,9 @@ type Notification struct {
 }
 */
 
-func (cfg *apiconfig) notifypostmentions(p Prose) {
+func (cfg *handler) notifypostmentions(p Prose) {
 
-	mentionedusers, err := mentions(p.Body)
+	mentionedusers, err := utils.Mentions(p.Body)
 	if err != nil {
 		log.Println(err)
 		return
@@ -109,29 +109,4 @@ func (cfg *apiconfig) notifypostmentions(p Prose) {
 		go cfg.Broadcastnotifications(n)
 
 	}
-}
-
-func mentions(content string) ([]string, error) {
-
-	words := strings.Split(content, " ")
-	uniqueusers := make(map[string]bool)
-	users := []string{}
-
-	pattern := regexp.MustCompile(`^@[a-zA-Z_][a-zA-Z0-9._%+-]{0,8}$`)
-
-	for _, k := range words {
-
-		if pattern.MatchString(k) {
-			username := k[1:]
-
-			if !uniqueusers[username] {
-				if _, ok := uniqueusers[k[1:]]; !ok {
-					uniqueusers[username] = true
-					users = append(users, username)
-				}
-			}
-		}
-	}
-
-	return users, nil
 }

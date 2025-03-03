@@ -5,10 +5,20 @@ SELECT id FROM users WHERE username=$1;
 SELECT EXISTS (SELECT 1 FROM follows WHERE follower_id=$1 AND followee_id=$2);
 
 -- name: Updatefollower :one
-UPDATE users SET followers= followers+1 AND followees=followees+1 WHERE id=$1 RETURNING followers;
+UPDATE users 
+SET 
+followers=CASE WHEN id=$1 THEN followers+1 ELSE followers END, 
+followees=CASE WHEN id=$2 THEN followees+1 ELSE followees END
+WHERE id in ($1,$2)
+RETURNING followers;
 
 -- name: Deletefollower :one
-UPDATE users SET followers= followers-1 AND followees= followees-1 WHERE id=$1 RETURNING followers;
+UPDATE users 
+SET 
+followers= CASE WHEN id=$1 THEN followers-1 ELSE followers END, 
+followees= CASE WHEN id=$2 THEN followees-1 ELSE followees END
+WHERE id in ($1,$2)
+RETURNING followers;
 
 -- name: Addfollower :exec
 INSERT INTO follows(followee_id,follower_id) VALUES($1,$2);

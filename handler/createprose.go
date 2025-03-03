@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"context"
@@ -13,6 +13,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	auth "github.com/jaydee029/Verses/internal/auth"
 	"github.com/jaydee029/Verses/internal/database"
+	"github.com/jaydee029/Verses/utils"
 )
 
 type Prose struct {
@@ -33,7 +34,7 @@ type body struct {
 	Body string `json:"body"`
 }
 
-func (cfg *apiconfig) postProse(w http.ResponseWriter, r *http.Request) {
+func (cfg *handler) PostProse(w http.ResponseWriter, r *http.Request) {
 
 	token, err := auth.BearerHeader(r.Header)
 
@@ -78,7 +79,7 @@ func (cfg *apiconfig) postProse(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//total, _ := cfg.DB.Countprose(r.Context(), pgUUID)
-	content := profane(cleanText)
+	content := utils.Profane(cleanText)
 
 	var pgtime pgtype.Timestamp
 	err = pgtime.Scan(time.Now().UTC())
@@ -144,7 +145,7 @@ func (cfg *apiconfig) postProse(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (cfg *apiconfig) prosecreation(p Prose) {
+func (cfg *handler) prosecreation(p Prose) {
 	u, err := cfg.DB.GetUserbyId(context.Background(), p.Userid)
 
 	if err != nil {
@@ -162,7 +163,7 @@ func (cfg *apiconfig) prosecreation(p Prose) {
 	go cfg.notifypostmentions(p)
 }
 
-func (cfg *apiconfig) fanoutprose(p Prose) {
+func (cfg *handler) fanoutprose(p Prose) {
 
 	items, err := cfg.DB.FetchTimelineItems(context.Background(), database.FetchTimelineItemsParams{
 		ProseID:    p.ID,
@@ -182,17 +183,4 @@ func (cfg *apiconfig) fanoutprose(p Prose) {
 		go cfg.Broadcasttimeline(ti)
 	}
 
-}
-
-func profane(content string) string {
-	contentslice := strings.Split(content, " ")
-
-	for i, word := range contentslice {
-		wordl := strings.ToLower(word)
-		if wordl == "fuck" || wordl == "shit" || wordl == "fornax" {
-			contentslice[i] = "****"
-		}
-	}
-
-	return strings.Join(contentslice, " ")
 }

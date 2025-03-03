@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"context"
@@ -21,13 +21,15 @@ type Input struct {
 	Username string `json:"username"`
 }
 type User struct {
-	ID        pgtype.UUID `json:"id"`
-	Email     string      `json:"email"`
-	Name      string      `json:"name"`
-	Username  string      `json:"username"`
-	Is_red    bool        `json:"is_red,omitempty"`
-	Follower  bool        `json:"follower"`
-	Following bool        `json:"following"`
+	ID           pgtype.UUID `json:"id"`
+	Email        string      `json:"email,omitempty"`
+	Name         string      `json:"name"`
+	Username     string      `json:"username,omitempty"`
+	Is_red       bool        `json:"is_red,omitempty"`
+	Follower     bool        `json:"follower"`
+	Follows_back bool        `json:"follows_back"`
+	Followers    int         `json:"followers"`
+	Following    int         `json:"following"`
 }
 type res_login struct {
 	Email         string `json:"email"`
@@ -41,7 +43,7 @@ type UserInput struct {
 	Username string `json:"username"`
 }
 
-func (cfg *apiconfig) createUser(w http.ResponseWriter, r *http.Request) {
+func (cfg *handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	decoder := json.NewDecoder(r.Body)
 	params := UserInput{}
@@ -131,7 +133,7 @@ func (cfg *apiconfig) createUser(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (cfg *apiconfig) userLogin(w http.ResponseWriter, r *http.Request) {
+func (cfg *handler) UserLogin(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	params := Input{}
 	err := decoder.Decode(&params)
@@ -178,7 +180,7 @@ func (cfg *apiconfig) userLogin(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (cfg *apiconfig) updateUser(w http.ResponseWriter, r *http.Request) {
+func (cfg *handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	token, err := auth.BearerHeader(r.Header)
 

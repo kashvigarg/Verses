@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"net/http"
@@ -11,7 +11,7 @@ import (
 	"github.com/jaydee029/Verses/internal/database"
 )
 
-func (cfg *apiconfig) getProse(w http.ResponseWriter, r *http.Request) {
+func (cfg *handler) GetProse(w http.ResponseWriter, r *http.Request) {
 	token, err := auth.BearerHeader(r.Header)
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, err.Error())
@@ -57,6 +57,7 @@ func (cfg *apiconfig) getProse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//string(pgUUID.Bytes)
 	posts, err := cfg.DB.GetsProseAll(r.Context(), database.GetsProseAllParams{
 		AuthorID: pgUUID,
 		Username: username,
@@ -87,7 +88,7 @@ func (cfg *apiconfig) getProse(w http.ResponseWriter, r *http.Request) {
 	respondWithJson(w, http.StatusOK, prose)
 }
 
-func (cfg *apiconfig) ProsebyId(w http.ResponseWriter, r *http.Request) {
+func (cfg *handler) ProsebyId(w http.ResponseWriter, r *http.Request) {
 	token, err := auth.BearerHeader(r.Header)
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, err.Error())
@@ -140,7 +141,7 @@ func (cfg *apiconfig) ProsebyId(w http.ResponseWriter, r *http.Request) {
 	respondWithJson(w, http.StatusOK, prose)
 }
 
-func (cfg *apiconfig) DeleteProse(w http.ResponseWriter, r *http.Request) {
+func (cfg *handler) DeleteProse(w http.ResponseWriter, r *http.Request) {
 	token, err := auth.BearerHeader(r.Header)
 
 	if err != nil {

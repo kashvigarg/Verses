@@ -71,13 +71,13 @@ func (q *Queries) DecreaseCommentLikeCount(ctx context.Context, id int32) (int32
 const getComments = `-- name: GetComments :many
 SELECT c.id, c.body, c.created_at, c.likes_count, u.username,
 CASE WHEN c.user_id=$1 THEN true ELSE false END AS Mine,
-CASE WHEN Likes.user_id THEN true ELSE false END AS Liked
+CASE WHEN Likes.user_id IS NOT NULL THEN true ELSE false END AS Liked
 From comments AS c INNER JOIN users as u ON 
 c.user_id=u.id
 LEFT JOIN comment_likes as Likes
 ON Likes.user_id=$1 AND Likes.comment_id=c.id
 WHERE c.prose_id=$2 AND
-$3::SERIAL IS NULL OR c.id<$3
+$3::INT IS NULL OR c.id<$3
 ORDER BY c.id DESC 
 LIMIT $4
 `

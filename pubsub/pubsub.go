@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"context"
 	"encoding/gob"
+	"errors"
 	"log"
+	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-func publish[T any](conn *amqp.Connection, exchange string, val T) error {
+func Publish[T any](conn *amqp.Connection, exchange, key string, val T) error {
 
 	ch, err := conn.Channel()
 	if err != nil {
@@ -23,17 +25,17 @@ func publish[T any](conn *amqp.Connection, exchange string, val T) error {
 		return err
 	}
 
-	return ch.PublishWithContext(context.Background(), exchange, "", false, false, amqp.Publishing{
+	return ch.PublishWithContext(context.Background(), exchange, key, false, false, amqp.Publishing{
 		ContentType: "application/gob",
 		Body:        buffer.Bytes(),
 	})
 }
 
-func consume[T any](conn *amqp.Connection, exchange, queueName string) (<-chan T, error) {
+func Consume[T any](conn *amqp.Connection, exchange, queueName, key string) (<-chan T, error) {
 
 	msgch := make(chan T)
 
-	subch, queue, err := DeclareAndBind(conn, exchange, queueName, "")
+	subch, queue, err := DeclareAndBind(conn, exchange, queueName, key)
 
 	if err != nil {
 		return msgch, err
@@ -82,6 +84,48 @@ func DeclareAndBind(conn *amqp.Connection, exchange, queueName, key string) (*am
 	}
 
 	return pubchannel, pubqueue, nil
+}
+
+func ConnectToBroker(rabbitConnString string) (*amqp.Connection, error) {
+	maxretries := 3
+	for i := 1; i <= maxretries; i++ {
+		conn, err := amqp.Dial(rabbitConnString)
+		if err == nil {
+			return conn, nil
+		} else {
+			log.Printf("could not connect to RabbitMQ: %v, retrying in 5 seconds", err)
+			time.Sleep(5 * time.Second)
+		}
+	}
+
+	return nil, errors.New("couldn't connect to rabbitmq")
+}
+
+func InitBroker(conn *amqp.Connection) error {
+
+	ch, err := conn.Channel()
+	if err != nil {
+		log.Printf("error creating a channel: %v", err)
+		return err
+	}
+
+	err = ch.ExchangeDeclare("notifications_direct", "direct", true, false, false, false, nil)
+	if err != nil {
+		log.Printf("error declaring notifications_direct: %v", err)
+		return err
+	}
+	err = ch.ExchangeDeclare("comments_direct", "direct", true, false, false, false, nil)
+	if err != nil {
+		log.Printf("error declaring comments_direct: %v", err)
+		return err
+	}
+	err = ch.ExchangeDeclare("timeline_direct", "direct", true, false, false, false, nil)
+	if err != nil {
+		log.Printf("error declaring comments_direct: %v", err)
+		return err
+	}
+	log.Println("Exchange setup finished succesfully")
+	return nil
 }
 
 /*

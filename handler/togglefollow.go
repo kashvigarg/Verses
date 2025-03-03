@@ -1,6 +1,7 @@
-package main
+package handler
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -14,7 +15,7 @@ type togglefollow struct {
 	Followers_count int  `json:"followers_count"`
 }
 
-func (cfg *apiconfig) toggleFollow(w http.ResponseWriter, r *http.Request) {
+func (cfg *handler) ToggleFollow(w http.ResponseWriter, r *http.Request) {
 	username := chi.URLParam(r, "username")
 
 	token, err := auth.BearerHeader(r.Header)
@@ -62,7 +63,7 @@ func (cfg *apiconfig) toggleFollow(w http.ResponseWriter, r *http.Request) {
 		FolloweeID: followee_id,
 	})
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, err.Error())
+		respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("unable to find follow status: %v", err))
 		return
 	}
 	var followers int32
@@ -74,12 +75,15 @@ func (cfg *apiconfig) toggleFollow(w http.ResponseWriter, r *http.Request) {
 			FollowerID: pgUUID,
 		})
 		if err != nil {
-			respondWithError(w, http.StatusInternalServerError, err.Error())
+			respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Unable to remove follower:%v", err))
 			return
 		}
-		followers, err = qtx.Deletefollower(r.Context(), followee_id)
+		followers, err = qtx.Deletefollower(r.Context(), database.DeletefollowerParams{
+			ID:   followee_id,
+			ID_2: pgUUID,
+		})
 		if err != nil {
-			respondWithError(w, http.StatusInternalServerError, err.Error())
+			respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Unable to remove follower from the profile:%v", err))
 			return
 		}
 
@@ -91,12 +95,15 @@ func (cfg *apiconfig) toggleFollow(w http.ResponseWriter, r *http.Request) {
 			FollowerID: pgUUID,
 		})
 		if err != nil {
-			respondWithError(w, http.StatusInternalServerError, err.Error())
+			respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Unable to add follower:%v", err))
 			return
 		}
-		followers, err = qtx.Updatefollower(r.Context(), followee_id)
+		followers, err = qtx.Updatefollower(r.Context(), database.UpdatefollowerParams{
+			ID:   followee_id,
+			ID_2: pgUUID,
+		})
 		if err != nil {
-			respondWithError(w, http.StatusInternalServerError, err.Error())
+			respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Unable to add follower to the profile:%v", err))
 			return
 		}
 		followed = true

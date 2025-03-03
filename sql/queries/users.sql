@@ -24,19 +24,19 @@ SELECT EXISTS (SELECT 1 FROM users WHERE username=$1);
 
 -- name: GetUsers :many
 SELECT Name, username, id, followers, followees ,
-CASE WHEN followees.follower_id THEN true ELSE false END AS follower,
-CASE WHEN followers.followee_id THEN true ELSE false END AS following
+CASE WHEN followees.follower_id IS NOT NULL THEN true ELSE false END AS follower,
+CASE WHEN followers.followee_id IS NOT NULL THEN true ELSE false END AS following 
 FROM users LEFT JOIN follows as followers
 ON followers.followee_id=$1 AND followers.follower_id=id
 LEFT JOIN follows as followees
 ON followees.follower_id=$1 AND followees.followee_id=id
-WHERE username> $2 
+WHERE $2::VARCHAR IS NULL or username> $2 
 ORDER BY username ASC LIMIT $3 ;
 
 -- name: GetUsersingle :one
 SELECT Name, username, id, followers, followees ,
-CASE WHEN followees.follower_id THEN true ELSE false END AS follower,
-CASE WHEN followers.followee_id THEN true ELSE false END AS following
+CASE WHEN followees.follower_id IS NOT NULL THEN true ELSE false END AS follower,
+CASE WHEN followers.followee_id IS NOT NULL THEN true ELSE false END AS following
 FROM users LEFT JOIN follows as followers
 ON followers.followee_id=$1 AND followers.follower_id=id
 LEFT JOIN follows as followees

@@ -120,7 +120,7 @@ func (q *Queries) InsertNotification(ctx context.Context, arg InsertNotification
 
 const notificationActorExists = `-- name: NotificationActorExists :one
 SELECT EXISTS 
-(SELECT 1 FROM notifications WHERE user_id=$1 AND type='folllow' AND  $2::VARCHAR= ANY(actors) AND read=false)
+(SELECT 1 FROM notifications WHERE user_id=$1 AND type='folllow' AND  $2::VARCHAR= ANY(actors) AND read=false) as exists
 `
 
 type NotificationActorExistsParams struct {

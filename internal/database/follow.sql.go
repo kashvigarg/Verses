@@ -26,11 +26,21 @@ func (q *Queries) Addfollower(ctx context.Context, arg AddfollowerParams) error 
 }
 
 const deletefollower = `-- name: Deletefollower :one
-UPDATE users SET followers= followers-1 AND followees= followees-1 WHERE id=$1 RETURNING followers
+UPDATE users 
+SET 
+followers= CASE WHEN id=$1 THEN followers-1 ELSE followers END, 
+followees= CASE WHEN id=$2 THEN followees-1 ELSE followees END
+WHERE id in ($1,$2)
+RETURNING followers
 `
 
-func (q *Queries) Deletefollower(ctx context.Context, id pgtype.UUID) (int32, error) {
-	row := q.db.QueryRow(ctx, deletefollower, id)
+type DeletefollowerParams struct {
+	ID   pgtype.UUID
+	ID_2 pgtype.UUID
+}
+
+func (q *Queries) Deletefollower(ctx context.Context, arg DeletefollowerParams) (int32, error) {
+	row := q.db.QueryRow(ctx, deletefollower, arg.ID, arg.ID_2)
 	var followers int32
 	err := row.Scan(&followers)
 	return followers, err
@@ -78,11 +88,21 @@ func (q *Queries) Removefollower(ctx context.Context, arg RemovefollowerParams) 
 }
 
 const updatefollower = `-- name: Updatefollower :one
-UPDATE users SET followers= followers+1 AND followees=followees+1 WHERE id=$1 RETURNING followers
+UPDATE users 
+SET 
+followers=CASE WHEN id=$1 THEN followers+1 ELSE followers END, 
+followees=CASE WHEN id=$2 THEN followees+1 ELSE followees END
+WHERE id in ($1,$2)
+RETURNING followers
 `
 
-func (q *Queries) Updatefollower(ctx context.Context, id pgtype.UUID) (int32, error) {
-	row := q.db.QueryRow(ctx, updatefollower, id)
+type UpdatefollowerParams struct {
+	ID   pgtype.UUID
+	ID_2 pgtype.UUID
+}
+
+func (q *Queries) Updatefollower(ctx context.Context, arg UpdatefollowerParams) (int32, error) {
+	row := q.db.QueryRow(ctx, updatefollower, arg.ID, arg.ID_2)
 	var followers int32
 	err := row.Scan(&followers)
 	return followers, err

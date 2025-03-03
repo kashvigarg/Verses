@@ -13,7 +13,7 @@ UPDATE notifications SET read=true WHERE user_id=$1;
 
 -- name: NotificationActorExists :one
 SELECT EXISTS 
-(SELECT 1 FROM notifications WHERE user_id=$1 AND type='folllow' AND  $2::VARCHAR= ANY(actors) AND read=false);
+(SELECT 1 FROM notifications WHERE user_id=$1 AND type='folllow' AND  $2::VARCHAR= ANY(actors) AND read=false) as exists;
 
 -- name: NotificationExists :one
 SELECT id FROM notifications WHERE user_id=$1 AND type='follow' AND read=false;
