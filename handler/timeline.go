@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"log"
 	"mime"
 	"net/http"
 	"strconv"
@@ -12,6 +11,7 @@ import (
 	auth "github.com/jaydee029/Verses/internal/auth"
 	"github.com/jaydee029/Verses/internal/database"
 	"github.com/jaydee029/Verses/pubsub"
+	"go.uber.org/zap"
 )
 
 type timeline_item struct {
@@ -42,6 +42,7 @@ func (cfg *handler) Timeline(w http.ResponseWriter, r *http.Request) {
 	var pgUUID pgtype.UUID
 	err = pgUUID.Scan(authorid)
 	if err != nil {
+		cfg.logger.Info("Error setting UUID:", zap.Error(err))
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -62,6 +63,7 @@ func (cfg *handler) Timeline(w http.ResponseWriter, r *http.Request) {
 		}
 		err = before.Scan(parsedTime)
 		if err != nil {
+			cfg.logger.Info("Error converting timestamp to pgtype format:", zap.Error(err))
 			respondWithError(w, http.StatusInternalServerError, err.Error())
 		}
 	} else {
@@ -76,6 +78,7 @@ func (cfg *handler) Timeline(w http.ResponseWriter, r *http.Request) {
 
 	limit, err := strconv.ParseInt(limitstr, 10, 32)
 	if err != nil {
+		cfg.logger.Info("Error converting limit value to int type:", zap.Error(err))
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 	}
 
@@ -123,7 +126,7 @@ func (cfg *handler) Broadcasttimeline(ti timeline_item) {
 
 	err := pubsub.Publish(cfg.pubsub, "timeline_direct", "timeline_item"+uuid.UUID(ti.Userid.Bytes).String(), ti)
 	if err != nil {
-		log.Printf("failed to publish time line item: %v", err)
+		cfg.logger.Info("failed to publish time line item:", zap.Error(err))
 		return
 	}
 

@@ -7,6 +7,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	auth "github.com/jaydee029/Verses/internal/auth"
 	"github.com/jaydee029/Verses/internal/database"
+	"go.uber.org/zap"
 )
 
 type togglelike struct {
@@ -33,6 +34,7 @@ func (cfg *handler) ToggleLike(w http.ResponseWriter, r *http.Request) {
 
 	err = user_id.Scan(useridstr)
 	if err != nil {
+		cfg.logger.Info("Error converting Id to pgtype format:", zap.Error(err))
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -41,12 +43,14 @@ func (cfg *handler) ToggleLike(w http.ResponseWriter, r *http.Request) {
 
 	err = prose_id.Scan(proseidstr)
 	if err != nil {
+		cfg.logger.Info("Error converting prose Id to pgtype format:", zap.Error(err))
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	tx, err := cfg.DBpool.Begin(r.Context())
 	if err != nil {
+		cfg.logger.Info("Error starting the transaction:", zap.Error(err))
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}

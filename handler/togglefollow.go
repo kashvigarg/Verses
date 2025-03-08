@@ -8,6 +8,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	auth "github.com/jaydee029/Verses/internal/auth"
 	"github.com/jaydee029/Verses/internal/database"
+	"go.uber.org/zap"
 )
 
 type togglefollow struct {
@@ -34,6 +35,7 @@ func (cfg *handler) ToggleFollow(w http.ResponseWriter, r *http.Request) {
 
 	err = pgUUID.Scan(follower_id)
 	if err != nil {
+		cfg.logger.Info("Error converting Id to pgtype format:", zap.Error(err))
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -46,6 +48,7 @@ func (cfg *handler) ToggleFollow(w http.ResponseWriter, r *http.Request) {
 
 	tx, err := cfg.DBpool.Begin(r.Context())
 	if err != nil {
+		cfg.logger.Info("Error starting the transaction:", zap.Error(err))
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}

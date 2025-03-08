@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"log"
 	"mime"
 	"net/http"
 	"strconv"
@@ -13,6 +12,7 @@ import (
 	auth "github.com/jaydee029/Verses/internal/auth"
 	"github.com/jaydee029/Verses/internal/database"
 	"github.com/jaydee029/Verses/pubsub"
+	"go.uber.org/zap"
 )
 
 type Notification struct {
@@ -48,6 +48,7 @@ func (cfg *handler) Notifications(w http.ResponseWriter, r *http.Request) {
 	var userid pgtype.UUID
 	err = userid.Scan(useridstr)
 	if err != nil {
+		cfg.logger.Info("Error setting UUID:", zap.Error(err))
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -68,6 +69,7 @@ func (cfg *handler) Notifications(w http.ResponseWriter, r *http.Request) {
 		}
 		err = before.Scan(parsedTime)
 		if err != nil {
+			cfg.logger.Info("Error converting timestamp to pgtype:", zap.Error(err))
 			respondWithError(w, http.StatusInternalServerError, err.Error())
 			return
 		}
@@ -84,6 +86,7 @@ func (cfg *handler) Notifications(w http.ResponseWriter, r *http.Request) {
 
 	limit, err := strconv.ParseInt(limitstr, 10, 32)
 	if err != nil {
+		cfg.logger.Info("Error converting limit value to int type:", zap.Error(err))
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -152,6 +155,7 @@ func (cfg *handler) ReadNotification(w http.ResponseWriter, r *http.Request) {
 	var notificationid pgtype.UUID
 	err = notificationid.Scan(useridstr)
 	if err != nil {
+		cfg.logger.Info("Error setting UUID:", zap.Error(err))
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -186,6 +190,7 @@ func (cfg *handler) ReadNotifications(w http.ResponseWriter, r *http.Request) {
 	var userid pgtype.UUID
 	err = userid.Scan(useridstr)
 	if err != nil {
+		cfg.logger.Info("Error setting UUID:", zap.Error(err))
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -203,7 +208,7 @@ func (cfg *handler) Broadcastnotifications(n Notification) {
 
 	err := pubsub.Publish(cfg.pubsub, "notification_direct", "notification_item."+uuid.UUID(n.Userid.Bytes).String(), n)
 	if err != nil {
-		log.Printf("error publishing notification item: %v", err)
+		cfg.logger.Info("error publishing notification item:", zap.Error(err))
 		return
 	}
 	/*

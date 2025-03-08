@@ -4,6 +4,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jaydee029/Verses/internal/database"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"go.uber.org/zap"
 )
 
 /*
@@ -20,10 +21,11 @@ type handler struct {
 	DB               *database.Queries
 	DBpool           *pgxpool.Pool
 	pubsub           *amqp.Connection
+	logger           *zap.Logger
 	//Clients          *Clients
 }
 
-func New(fscounts int, jwt, apikey string, DBQueries *database.Queries, DBPool *pgxpool.Pool, pubsubconn *amqp.Connection) *handler {
+func New(fscounts int, jwt, apikey string, DBQueries *database.Queries, DBPool *pgxpool.Pool, pubsubconn *amqp.Connection, logger *zap.Logger) *handler {
 	return &handler{
 		fileservercounts: fscounts,
 		jwtsecret:        jwt,
@@ -31,5 +33,6 @@ func New(fscounts int, jwt, apikey string, DBQueries *database.Queries, DBPool *
 		DB:               DBQueries,
 		DBpool:           DBPool,
 		pubsub:           pubsubconn,
+		logger:           logger,
 	}
 }

@@ -8,13 +8,14 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jaydee029/Verses/internal/database"
+	"go.uber.org/zap"
 )
 
 func (cfg *handler) FollowNotification(followeeid, followerid pgtype.UUID) {
 
 	tx, err := cfg.DBpool.Begin(context.Background())
 	if err != nil {
-		log.Println("error starting the transaction")
+		cfg.logger.Info("error starting the transaction", zap.Error(err))
 		return
 	}
 
@@ -28,7 +29,7 @@ func (cfg *handler) FollowNotification(followeeid, followerid pgtype.UUID) {
 
 	user, err := qtx.GetUserbyId(context.Background(), followerid)
 	if err != nil {
-		log.Println("error fetching the follower username")
+		cfg.logger.Info("error fetching the follower username", zap.Error(err))
 		return
 	}
 
@@ -40,17 +41,17 @@ func (cfg *handler) FollowNotification(followeeid, followerid pgtype.UUID) {
 		Column2: user.Username,
 	})
 	if err != nil {
-		log.Panicln("error while fetching notification for the actor:" + err.Error())
+		cfg.logger.Info("error while fetching notification for the actor:", zap.Error(err))
 		return
 	}
 
 	if !notified {
-		log.Println("notification not found, now creating..")
+		cfg.logger.Info("notification not found, now creating..")
 
 		generated_at := time.Now().UTC()
 		var pgtype_generated_at pgtype.Timestamp
 		if err = pgtype_generated_at.Scan(generated_at); err != nil {
-			log.Println("error while converting timestamp to pgtype:" + err.Error())
+			cfg.logger.Info("error while converting timestamp to pgtype:", zap.Error(err))
 			return
 		}
 

@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y ca-certificates
 
 COPY --from=build /app/Verses /usr/bin/Verses
 
-EXPOSE 80
+EXPOSE 8080
 
 CMD ["Verses"]
 

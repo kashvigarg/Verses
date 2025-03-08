@@ -2,10 +2,10 @@ package handler
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"github.com/jaydee029/Verses/utils"
+	"go.uber.org/zap"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jaydee029/Verses/internal/database"
@@ -15,7 +15,7 @@ func (cfg *handler) notifycommentmentions(c Comment) {
 
 	mentionedusers, err := utils.Mentions(c.Body)
 	if err != nil {
-		log.Println(err)
+		cfg.logger.Info("Error fetching mentions in the comment:", zap.Error(err))
 		return
 	}
 
@@ -24,7 +24,7 @@ func (cfg *handler) notifycommentmentions(c Comment) {
 	var generated_at_pgtype pgtype.Timestamp
 
 	if err = generated_at_pgtype.Scan(generated_at); err != nil {
-		log.Println(err)
+		cfg.logger.Info("Error generating timestamp:", zap.Error(err))
 		return
 	}
 
@@ -37,7 +37,7 @@ func (cfg *handler) notifycommentmentions(c Comment) {
 	})
 
 	if err != nil {
-		log.Println(err)
+		cfg.logger.Info("Error fetching comment mentions:", zap.Error(err))
 		return
 	}
 
@@ -71,7 +71,7 @@ func (cfg *handler) notifypostmentions(p Prose) {
 
 	mentionedusers, err := utils.Mentions(p.Body)
 	if err != nil {
-		log.Println(err)
+		cfg.logger.Info("Error fetching mentions in the post:", zap.Error(err))
 		return
 	}
 
@@ -80,7 +80,7 @@ func (cfg *handler) notifypostmentions(p Prose) {
 	var generated_at_pgtype pgtype.Timestamp
 
 	if err = generated_at_pgtype.Scan(generated_at); err != nil {
-		log.Println(err)
+		cfg.logger.Info("Error converting timestamp to pgtype format:", zap.Error(err))
 		return
 	}
 
@@ -93,7 +93,7 @@ func (cfg *handler) notifypostmentions(p Prose) {
 	})
 
 	if err != nil {
-		log.Println(err)
+		cfg.logger.Info("Error fecthing post mentions from the database:", zap.Error(err))
 		return
 	}
 

@@ -3,8 +3,6 @@ package handler
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -14,6 +12,7 @@ import (
 	auth "github.com/jaydee029/Verses/internal/auth"
 	"github.com/jaydee029/Verses/internal/database"
 	"github.com/jaydee029/Verses/utils"
+	"go.uber.org/zap"
 )
 
 type Prose struct {
@@ -75,7 +74,9 @@ func (cfg *handler) PostProse(w http.ResponseWriter, r *http.Request) {
 
 	err = post_pgUUID.Scan(uuids)
 	if err != nil {
-		fmt.Println("Error setting UUID:", err)
+		cfg.logger.Info("Error setting UUID:", zap.Error(err))
+		respondWithError(w, http.StatusInternalServerError, "error parsing uuid into pgtype value")
+		return
 	}
 
 	//total, _ := cfg.DB.Countprose(r.Context(), pgUUID)
@@ -84,6 +85,7 @@ func (cfg *handler) PostProse(w http.ResponseWriter, r *http.Request) {
 	var pgtime pgtype.Timestamp
 	err = pgtime.Scan(time.Now().UTC())
 	if err != nil {
+		cfg.logger.Info("Error setting timeestamp:", zap.Error(err))
 		respondWithError(w, http.StatusInternalServerError, "error parsing timestamp into pgtype value")
 		return
 	}
@@ -149,7 +151,7 @@ func (cfg *handler) prosecreation(p Prose) {
 	u, err := cfg.DB.GetUserbyId(context.Background(), p.Userid)
 
 	if err != nil {
-		log.Println(err)
+		cfg.logger.Info("Error fetching user by Id:", zap.Error(err))
 		return
 	}
 
@@ -171,7 +173,7 @@ func (cfg *handler) fanoutprose(p Prose) {
 	})
 
 	if err != nil {
-		log.Println(err)
+		cfg.logger.Info("Error Fetching timeline itmes:", zap.Error(err))
 		return
 	}
 

@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jaydee029/Verses/internal/database"
+	"go.uber.org/zap"
 )
 
 func (cfg *handler) CommentNotification(c Comment) {
@@ -15,14 +16,14 @@ func (cfg *handler) CommentNotification(c Comment) {
 	nid := uuid.New()
 	var nid_pgtype pgtype.UUID
 	if err := nid_pgtype.Scan(nid); err != nil {
-		log.Println("error while converting notification id to pgtype:" + err.Error())
+		cfg.logger.Info("error while converting notification id to pgtype:", zap.Error(err))
 		return
 	}
 
 	generated_at := time.Now().UTC()
 	var generated_at_pgtype pgtype.Timestamp
 	if err := generated_at_pgtype.Scan(generated_at); err != nil {
-		log.Println("error while converting timestamp to pgtype:" + err.Error())
+		log.Println("error while converting timestamp to pgtype:", zap.Error(err))
 		return
 	}
 
@@ -35,7 +36,7 @@ func (cfg *handler) CommentNotification(c Comment) {
 	})
 
 	if err != nil {
-		log.Println("error while inserting comment notifications:" + err.Error())
+		cfg.logger.Info("error while inserting comment notifications:", zap.Error(err))
 		return
 	}
 	var n Notification

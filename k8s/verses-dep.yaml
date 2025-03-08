@@ -1,0 +1,24 @@
+apiVersion: app/v1
+kind: Deployment
+metadata:
+  name: verses-deploymnet
+  labels:
+    app: verses
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: verses
+  template:
+    metadata:
+      labels:
+        app: verses
+    spec:
+      containers:
+      - name: verses
+        image: nn
+        envFrom:
+        - configMapRef:
+            name: verses-configmap 
+
+

@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	auth "github.com/jaydee029/Verses/internal/auth"
 	"github.com/jaydee029/Verses/internal/database"
+	"go.uber.org/zap"
 )
 
 func (cfg *handler) GetProse(w http.ResponseWriter, r *http.Request) {
@@ -37,6 +38,7 @@ func (cfg *handler) GetProse(w http.ResponseWriter, r *http.Request) {
 		}
 		err = before.Scan(parsedTime)
 		if err != nil {
+			cfg.logger.Info("Error converting timestamp to pgtype:", zap.Error(err))
 			respondWithError(w, http.StatusInternalServerError, err.Error())
 		}
 	}
@@ -47,12 +49,14 @@ func (cfg *handler) GetProse(w http.ResponseWriter, r *http.Request) {
 
 	limit, err := strconv.ParseInt(limitstr, 10, 32)
 	if err != nil {
+		cfg.logger.Info("Error converting limit value to int type:", zap.Error(err))
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 	}
 
 	var pgUUID pgtype.UUID
 	err = pgUUID.Scan(authorid)
 	if err != nil {
+		cfg.logger.Info("Error setting UUID:", zap.Error(err))
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -106,6 +110,7 @@ func (cfg *handler) ProsebyId(w http.ResponseWriter, r *http.Request) {
 
 	err = prose_pgUUID.Scan(proseidstr)
 	if err != nil {
+		cfg.logger.Info("Error converting Id to pgtype format:", zap.Error(err))
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -113,6 +118,7 @@ func (cfg *handler) ProsebyId(w http.ResponseWriter, r *http.Request) {
 
 	err = pgUUID.Scan(authorid)
 	if err != nil {
+		cfg.logger.Info("Error setting UUID:", zap.Error(err))
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -159,6 +165,7 @@ func (cfg *handler) DeleteProse(w http.ResponseWriter, r *http.Request) {
 
 	err = pgUUID.Scan(authorid)
 	if err != nil {
+		cfg.logger.Info("Error setting UUID:", zap.Error(err))
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -168,6 +175,7 @@ func (cfg *handler) DeleteProse(w http.ResponseWriter, r *http.Request) {
 
 	err = prose_pgUUID.Scan(proseidstr)
 	if err != nil {
+		cfg.logger.Info("Error converting Id to pgtype format:", zap.Error(err))
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}

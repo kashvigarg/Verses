@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"embed"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -11,6 +10,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/lib/pq"
+	"go.uber.org/zap"
 
 	"github.com/go-chi/chi/v5"
 	handler "github.com/jaydee029/Verses/handler"
@@ -25,40 +25,46 @@ var staticFiles embed.FS
 func main() {
 	godotenv.Load(".env")
 
+	logger, _ := zap.NewProduction()
+
 	jwt_secret := os.Getenv("JWT_SECRET")
 	if jwt_secret == "" {
-		log.Fatal("JWT secret key not set")
+		logger.Fatal("JWT secret key not set")
 	}
 
 	dbURL := os.Getenv("DB_CONN")
 	if dbURL == "" {
-		log.Fatal("database connection string not set")
+		logger.Fatal("database connection string not set")
 	}
 
 	dbcon, err := pgxpool.New(context.Background(), dbURL)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
+		logger.Fatal("Unable to connect to database:", zap.Error(err))
 		os.Exit(1)
 	}
-	defer dbcon.Close()
 
 	queries := database.New(dbcon)
 	rabbitConnString := os.Getenv("RABBITMQ_CONN")
 	if rabbitConnString == "" {
-		log.Fatalf("Message broker connection string not set")
+		logger.Fatal("Message broker connection string not set")
 	}
 
-	conn, err := pubsub.ConnectToBroker(rabbitConnString)
+	conn, err := pubsub.ConnectToBroker(rabbitConnString, logger)
 	if err != nil {
-		log.Fatalf("Failed to connect to message broker: %v", err)
+		logger.Fatal("Failed to connect to message broker:", zap.Error(err))
 	}
-	defer conn.Close()
+
+	defer func() {
+		logger.Sync()
+		dbcon.Close()
+		conn.Close()
+	}()
 
 	err = pubsub.InitBroker(conn)
 	if err != nil {
-		log.Fatalf("Failed to initialize message broker: %v", err)
+		logger.Fatal("Failed to initialize message broker:", zap.Error(err))
 	}
-	h := handler.New(0, jwt_secret, os.Getenv("RED_KEY"), queries, dbcon, conn)
+	h := handler.New(0, jwt_secret, os.Getenv("RED_KEY"), queries, dbcon, conn, logger)
 
 	port := os.Getenv("PORT")
 

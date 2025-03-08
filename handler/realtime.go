@@ -2,12 +2,12 @@ package handler
 
 import (
 	"context"
-	"log"
 	"net/http"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jaydee029/Verses/pubsub"
+	"go.uber.org/zap"
 )
 
 func (cfg *handler) subscribeTotimeline(w http.ResponseWriter, ctx context.Context, userid pgtype.UUID) {
@@ -20,7 +20,7 @@ func (cfg *handler) subscribeTotimeline(w http.ResponseWriter, ctx context.Conte
 
 	subch, err := pubsub.Consume[timeline_item](cfg.pubsub, "timeline_direct", "timeline_queue", "timeline_item."+uuid.UUID(userid.Bytes).String())
 	if err != nil {
-		log.Printf("error consuming items: %v", err)
+		cfg.logger.Info("error consuming items:", zap.Error(err))
 	}
 	/*
 		cl := &timelineclient{
@@ -55,7 +55,7 @@ func (cfg *handler) subscribeTocomments(w http.ResponseWriter, ctx context.Conte
 
 	subch, err := pubsub.Consume[Comment](cfg.pubsub, "comment_direct", "comment_queue", "comment_item."+uuid.UUID(proseid.Bytes).String())
 	if err != nil {
-		log.Printf("error consuming items: %v", err)
+		cfg.logger.Info("error consuming items:", zap.Error(err))
 	}
 	/*
 		c := make(chan Comment)
@@ -92,7 +92,7 @@ func (cfg *handler) subscribeTonotifications(w http.ResponseWriter, ctx context.
 	}
 	subch, err := pubsub.Consume[Notification](cfg.pubsub, "notification_direct", "notification_queue", "notification_item."+uuid.UUID(userid.Bytes).String())
 	if err != nil {
-		log.Printf("error consuming items: %v", err)
+		cfg.logger.Info("error consuming items: %v", zap.Error(err))
 	}
 	/*
 		n := make(chan Notification)

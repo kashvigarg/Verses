@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"mime"
 	"net/http"
 	"strconv"
@@ -16,6 +15,7 @@ import (
 	auth "github.com/jaydee029/Verses/internal/auth"
 	"github.com/jaydee029/Verses/internal/database"
 	"github.com/jaydee029/Verses/pubsub"
+	"go.uber.org/zap"
 )
 
 type Comment struct {
@@ -223,7 +223,7 @@ func (cfg *handler) Commentcreation(c Comment) {
 
 	user, err := cfg.DB.GetUserbyId(context.Background(), c.Userid)
 	if err != nil {
-		log.Println("error fetching the user from the id:" + err.Error())
+		cfg.logger.Info("error fetching the user from the id:", zap.Error(err))
 		return
 	}
 
@@ -244,7 +244,7 @@ func (cfg *handler) Commentcreation(c Comment) {
 func (cfg *handler) Broadcastcomments(c Comment) {
 	err := pubsub.Publish(cfg.pubsub, "comment_direct", "comment_item."+uuid.UUID(c.Proseid.Bytes).String(), c)
 	if err != nil {
-		log.Printf("error while publishing commment item: %v", err)
+		cfg.logger.Info("error while publishing commment item:", zap.Error(err))
 		return
 	}
 	/*

@@ -8,6 +8,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	auth "github.com/jaydee029/Verses/internal/auth"
 	"github.com/jaydee029/Verses/internal/database"
+	"go.uber.org/zap"
 )
 
 type toggCommentLike struct {
@@ -32,6 +33,7 @@ func (cfg *handler) ToggCommentLike(w http.ResponseWriter, r *http.Request) {
 	commentidstr := chi.URLParam(r, "commentid")
 	Commentid, err := strconv.Atoi(commentidstr)
 	if err != nil {
+		cfg.logger.Info("Error converting comment Id value to int type:", zap.Error(err))
 		respondWithError(w, http.StatusBadRequest, err.Error())
 	}
 
@@ -39,12 +41,14 @@ func (cfg *handler) ToggCommentLike(w http.ResponseWriter, r *http.Request) {
 
 	err = pgUUID.Scan(user_id)
 	if err != nil {
+		cfg.logger.Info("Error converting Id to pgtype format:", zap.Error(err))
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	tx, err := cfg.DBpool.Begin(r.Context())
 	if err != nil {
+		cfg.logger.Info("Error starting the transaction:", zap.Error(err))
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}

@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -12,6 +11,7 @@ import (
 	auth "github.com/jaydee029/Verses/internal/auth"
 	"github.com/jaydee029/Verses/internal/database"
 	validate "github.com/jaydee029/Verses/internal/validation"
+	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -99,14 +99,14 @@ func (cfg *handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	err = pgUUID.Scan(uuids)
 	if err != nil {
-		fmt.Println("Error setting UUID:", err)
+		cfg.logger.Info("Error setting UUID:", zap.Error(err))
 		return
 	}
 
 	var pgtime pgtype.Timestamp
 	err = pgtime.Scan(time.Now().UTC())
 	if err != nil {
-		fmt.Println("Error setting timestamp:", err)
+		cfg.logger.Info("Error setting timestamp:", zap.Error(err))
 		return
 	}
 
@@ -212,6 +212,7 @@ func (cfg *handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	err = pgUUID.Scan(Idstr)
 	if err != nil {
+		cfg.logger.Info("Error setting UUID:", zap.Error(err))
 		respondWithError(w, http.StatusUnauthorized, err.Error())
 		return
 	}
@@ -235,7 +236,7 @@ func (cfg *handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	err = pgtime.Scan(time.Now().UTC())
 	if err != nil {
-		fmt.Println("Error setting timestamp:", err)
+		cfg.logger.Info("Error setting timestamp:", zap.Error(err))
 	}
 
 	updateduser, err := cfg.DB.UpdateUser(r.Context(), database.UpdateUserParams{

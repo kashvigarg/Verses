@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -10,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	auth "github.com/jaydee029/Verses/internal/auth"
 	"github.com/jaydee029/Verses/internal/database"
+	"go.uber.org/zap"
 )
 
 type Token struct {
@@ -29,7 +29,7 @@ func (cfg *handler) RevokeToken(w http.ResponseWriter, r *http.Request) {
 
 	err = pgtime.Scan(time.Now().UTC())
 	if err != nil {
-		fmt.Println("Error setting timestamp:", err)
+		cfg.logger.Info("Error setting timestamp:", zap.Error(err))
 	}
 
 	err = cfg.DB.RevokeToken(r.Context(), database.RevokeTokenParams{
@@ -84,7 +84,7 @@ func (cfg *handler) VerifyRefresh(w http.ResponseWriter, r *http.Request) {
 
 	Id, err := uuid.Parse(Idstr)
 	if err != nil {
-		fmt.Println("Error parsing string to UUID:", err)
+		cfg.logger.Info("Error parsing string to UUID:", zap.Error(err))
 	}
 
 	auth_token, err := auth.Tokenize(Id, cfg.jwtsecret)

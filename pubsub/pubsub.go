@@ -5,10 +5,12 @@ import (
 	"context"
 	"encoding/gob"
 	"errors"
+	"fmt"
 	"log"
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
+	"go.uber.org/zap"
 )
 
 func Publish[T any](conn *amqp.Connection, exchange, key string, val T) error {
@@ -86,14 +88,16 @@ func DeclareAndBind(conn *amqp.Connection, exchange, queueName, key string) (*am
 	return pubchannel, pubqueue, nil
 }
 
-func ConnectToBroker(rabbitConnString string) (*amqp.Connection, error) {
+func ConnectToBroker(rabbitConnString string, logger *zap.Logger) (*amqp.Connection, error) {
 	maxretries := 3
+
+	//err:=errors{}
 	for i := 1; i <= maxretries; i++ {
 		conn, err := amqp.Dial(rabbitConnString)
 		if err == nil {
 			return conn, nil
 		} else {
-			log.Printf("could not connect to RabbitMQ: %v, retrying in 5 seconds", err)
+			logger.Info("could not connect to RabbitMQ: retrying in 5 seconds", zap.Error(err))
 			time.Sleep(5 * time.Second)
 		}
 	}
@@ -105,26 +109,17 @@ func InitBroker(conn *amqp.Connection) error {
 
 	ch, err := conn.Channel()
 	if err != nil {
-		log.Printf("error creating a channel: %v", err)
-		return err
+		return fmt.Errorf("error creating a channel: %w", err)
 	}
 
-	err = ch.ExchangeDeclare("notifications_direct", "direct", true, false, false, false, nil)
-	if err != nil {
-		log.Printf("error declaring notifications_direct: %v", err)
-		return err
+	exchanges := []string{"notifications_direct", "comments_direct", "timeline_direct"}
+
+	for _, exchange := range exchanges {
+		err = ch.ExchangeDeclare(exchange, "direct", true, false, false, false, nil)
+		if err != nil {
+			return fmt.Errorf("error declaring %s: %w", exchange, err)
+		}
 	}
-	err = ch.ExchangeDeclare("comments_direct", "direct", true, false, false, false, nil)
-	if err != nil {
-		log.Printf("error declaring comments_direct: %v", err)
-		return err
-	}
-	err = ch.ExchangeDeclare("timeline_direct", "direct", true, false, false, false, nil)
-	if err != nil {
-		log.Printf("error declaring comments_direct: %v", err)
-		return err
-	}
-	log.Println("Exchange setup finished succesfully")
 	return nil
 }
 

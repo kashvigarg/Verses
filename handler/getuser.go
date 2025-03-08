@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	auth "github.com/jaydee029/Verses/internal/auth"
 	"github.com/jaydee029/Verses/internal/database"
+	"go.uber.org/zap"
 )
 
 func (cfg *handler) GetUser(w http.ResponseWriter, r *http.Request) {
@@ -85,6 +86,7 @@ func (cfg *handler) GetUsers(w http.ResponseWriter, r *http.Request) {
 
 	limit, err := strconv.ParseInt(limitstr, 10, 32)
 	if err != nil {
+		cfg.logger.Info("Error converting limit value to integer type:", zap.Error(err))
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
