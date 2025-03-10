@@ -16,7 +16,7 @@ type Clients struct {
 
 type handler struct {
 	fileservercounts int
-	jwtsecret        string
+	Jwtsecret        string
 	apiKey           string
 	DB               *database.Queries
 	DBpool           *pgxpool.Pool
@@ -28,7 +28,7 @@ type handler struct {
 func New(fscounts int, jwt, apikey string, DBQueries *database.Queries, DBPool *pgxpool.Pool, pubsubconn *amqp.Connection, logger *zap.Logger) *handler {
 	return &handler{
 		fileservercounts: fscounts,
-		jwtsecret:        jwt,
+		Jwtsecret:        jwt,
 		apiKey:           apikey,
 		DB:               DBQueries,
 		DBpool:           DBPool,

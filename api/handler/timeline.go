@@ -8,7 +8,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
-	auth "github.com/jaydee029/Verses/internal/auth"
 	"github.com/jaydee029/Verses/internal/database"
 	"github.com/jaydee029/Verses/pubsub"
 	"go.uber.org/zap"
@@ -27,20 +26,22 @@ type timelineclient struct {
 }*/
 
 func (cfg *handler) Timeline(w http.ResponseWriter, r *http.Request) {
-	token, err := auth.BearerHeader(r.Header)
-	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, err.Error())
-		return
-	}
+	// token, err := auth.BearerHeader(r.Header)
+	// if err != nil {
+	// 	respondWithError(w, http.StatusUnauthorized, err.Error())
+	// 	return
+	// }
 
-	authorid, err := auth.ValidateToken(token, cfg.jwtsecret)
-	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, err.Error())
-		return
-	}
+	// authorid, err := auth.ValidateToken(token, cfg.Jwtsecret)
+	// if err != nil {
+	// 	respondWithError(w, http.StatusUnauthorized, err.Error())
+	// 	return
+	// }
+
+	authorid := r.Context().Value("authorid").(string)
 
 	var pgUUID pgtype.UUID
-	err = pgUUID.Scan(authorid)
+	err := pgUUID.Scan(authorid)
 	if err != nil {
 		cfg.logger.Info("Error setting UUID:", zap.Error(err))
 		respondWithError(w, http.StatusInternalServerError, err.Error())

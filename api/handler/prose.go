@@ -13,17 +13,19 @@ import (
 )
 
 func (cfg *handler) GetProse(w http.ResponseWriter, r *http.Request) {
-	token, err := auth.BearerHeader(r.Header)
-	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, err.Error())
-		return
-	}
+	// token, err := auth.BearerHeader(r.Header)
+	// if err != nil {
+	// 	respondWithError(w, http.StatusUnauthorized, err.Error())
+	// 	return
+	// }
 
-	authorid, err := auth.ValidateToken(token, cfg.jwtsecret)
-	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, err.Error())
-		return
-	}
+	// authorid, err := auth.ValidateToken(token, cfg.Jwtsecret)
+	// if err != nil {
+	// 	respondWithError(w, http.StatusUnauthorized, err.Error())
+	// 	return
+	// }
+
+	authorid := r.Context().Value("authorid").(string)
 
 	username := chi.URLParam(r, "username")
 
@@ -93,22 +95,23 @@ func (cfg *handler) GetProse(w http.ResponseWriter, r *http.Request) {
 }
 
 func (cfg *handler) ProsebyId(w http.ResponseWriter, r *http.Request) {
-	token, err := auth.BearerHeader(r.Header)
-	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, err.Error())
-		return
-	}
+	// token, err := auth.BearerHeader(r.Header)
+	// if err != nil {
+	// 	respondWithError(w, http.StatusUnauthorized, err.Error())
+	// 	return
+	// }
 
-	authorid, err := auth.ValidateToken(token, cfg.jwtsecret)
-	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, err.Error())
-		return
-	}
+	// authorid, err := auth.ValidateToken(token, cfg.Jwtsecret)
+	// if err != nil {
+	// 	respondWithError(w, http.StatusUnauthorized, err.Error())
+	// 	return
+	// }
 
+	authorid := r.Context().Value("authorid").(string)
 	proseidstr := chi.URLParam(r, "proseId")
 	var prose_pgUUID pgtype.UUID
 
-	err = prose_pgUUID.Scan(proseidstr)
+	err := prose_pgUUID.Scan(proseidstr)
 	if err != nil {
 		cfg.logger.Info("Error converting Id to pgtype format:", zap.Error(err))
 		respondWithError(w, http.StatusInternalServerError, err.Error())
@@ -155,7 +158,7 @@ func (cfg *handler) DeleteProse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authorid, err := auth.ValidateToken(token, cfg.jwtsecret)
+	authorid, err := auth.ValidateToken(token, cfg.Jwtsecret)
 
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, err.Error())

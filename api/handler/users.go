@@ -158,14 +158,14 @@ func (cfg *handler) UserLogin(w http.ResponseWriter, r *http.Request) {
 
 	Userid, _ := uuid.FromBytes(user.ID.Bytes[:])
 
-	Token, err := auth.Tokenize(Userid, cfg.jwtsecret)
+	Token, err := auth.Tokenize(Userid, cfg.Jwtsecret)
 
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, err.Error())
 		return
 	}
 
-	Refresh_token, err := auth.RefreshToken(Userid, cfg.jwtsecret)
+	Refresh_token, err := auth.RefreshToken(Userid, cfg.Jwtsecret)
 
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, err.Error())
@@ -182,35 +182,36 @@ func (cfg *handler) UserLogin(w http.ResponseWriter, r *http.Request) {
 
 func (cfg *handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 
-	token, err := auth.BearerHeader(r.Header)
+	// token, err := auth.BearerHeader(r.Header)
 
-	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, err.Error())
-		return
-	}
+	// if err != nil {
+	// 	respondWithError(w, http.StatusUnauthorized, err.Error())
+	// 	return
+	// }
 
-	is_refresh, err := auth.VerifyRefresh(token, cfg.jwtsecret)
+	// is_refresh, err := auth.VerifyRefresh(token, cfg.Jwtsecret)
 
-	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, err.Error())
-		return
-	}
+	// if err != nil {
+	// 	respondWithError(w, http.StatusUnauthorized, err.Error())
+	// 	return
+	// }
 
-	if is_refresh {
-		respondWithError(w, http.StatusUnauthorized, "Header contains refresh token")
-		return
-	}
+	// if is_refresh {
+	// 	respondWithError(w, http.StatusUnauthorized, "Header contains refresh token")
+	// 	return
+	// }
 
-	Idstr, err := auth.ValidateToken(token, cfg.jwtsecret)
+	// Idstr, err := auth.ValidateToken(token, cfg.Jwtsecret)
 
-	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, err.Error())
-		return
-	}
+	// if err != nil {
+	// 	respondWithError(w, http.StatusUnauthorized, err.Error())
+	// 	return
+	// }
 
+	Idstr := r.Context().Value("authorid").(string)
 	var pgUUID pgtype.UUID
 
-	err = pgUUID.Scan(Idstr)
+	err := pgUUID.Scan(Idstr)
 	if err != nil {
 		cfg.logger.Info("Error setting UUID:", zap.Error(err))
 		respondWithError(w, http.StatusUnauthorized, err.Error())

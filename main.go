@@ -13,7 +13,8 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/go-chi/chi/v5"
-	handler "github.com/jaydee029/Verses/handler"
+	"github.com/jaydee029/Verses/api/handler"
+	"github.com/jaydee029/Verses/api/middleware"
 	"github.com/jaydee029/Verses/internal/database"
 	"github.com/jaydee029/Verses/pubsub"
 	"github.com/joho/godotenv"
@@ -114,6 +115,7 @@ func main() {
 	t.Get("/metrics", h.Metrics)
 
 	r.Mount("/api", s)
+	s.With(middleware.Authmiddleware(h.Jwtsecret))
 	r.Mount("/admin", t)
 	sermux := corsmiddleware(r)
 

@@ -9,7 +9,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
-	auth "github.com/jaydee029/Verses/internal/auth"
 	"github.com/jaydee029/Verses/internal/database"
 	"github.com/jaydee029/Verses/utils"
 	"go.uber.org/zap"
@@ -35,21 +34,24 @@ type body struct {
 
 func (cfg *handler) PostProse(w http.ResponseWriter, r *http.Request) {
 
-	token, err := auth.BearerHeader(r.Header)
+	// token, err := auth.BearerHeader(r.Header)
 
-	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, "error decoding auth header:"+err.Error())
-		return
-	}
-	authorid, err := auth.ValidateToken(token, cfg.jwtsecret)
+	// if err != nil {
+	// 	respondWithError(w, http.StatusUnauthorized, "error decoding auth header:"+err.Error())
+	// 	return
+	// }
+	// authorid, err := auth.ValidateToken(token, cfg.Jwtsecret)
 
-	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, "error parsing the userid:"+err.Error())
-		return
-	}
+	// if err != nil {
+	// 	respondWithError(w, http.StatusUnauthorized, "error parsing the userid:"+err.Error())
+	// 	return
+	// }
+
+	authorid := r.Context().Value("authorid").(string)
+
 	decoder := json.NewDecoder(r.Body)
 	params := body{}
-	err = decoder.Decode(&params)
+	err := decoder.Decode(&params)
 
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "parameters couldn't be decoded")

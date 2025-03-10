@@ -53,7 +53,7 @@ func (cfg *handler) VerifyRefresh(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	is_refresh, err := auth.VerifyRefresh(token, cfg.jwtsecret)
+	is_refresh, err := auth.VerifyRefresh(token, cfg.Jwtsecret)
 
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, err.Error())
@@ -76,7 +76,7 @@ func (cfg *handler) VerifyRefresh(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusUnauthorized, "Refresh Token revoked")
 		return
 	}
-	Idstr, err := auth.ValidateToken(token, cfg.jwtsecret)
+	Idstr, err := auth.ValidateToken(token, cfg.Jwtsecret)
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, err.Error())
 		return
@@ -87,7 +87,7 @@ func (cfg *handler) VerifyRefresh(w http.ResponseWriter, r *http.Request) {
 		cfg.logger.Info("Error parsing string to UUID:", zap.Error(err))
 	}
 
-	auth_token, err := auth.Tokenize(Id, cfg.jwtsecret)
+	auth_token, err := auth.Tokenize(Id, cfg.Jwtsecret)
 
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, err.Error())

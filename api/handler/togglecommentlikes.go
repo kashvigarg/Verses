@@ -6,7 +6,6 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgtype"
-	auth "github.com/jaydee029/Verses/internal/auth"
 	"github.com/jaydee029/Verses/internal/database"
 	"go.uber.org/zap"
 )
@@ -18,17 +17,18 @@ type toggCommentLike struct {
 
 func (cfg *handler) ToggCommentLike(w http.ResponseWriter, r *http.Request) {
 
-	token, err := auth.BearerHeader(r.Header)
-	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, err.Error())
-		return
-	}
+	// token, err := auth.BearerHeader(r.Header)
+	// if err != nil {
+	// 	respondWithError(w, http.StatusUnauthorized, err.Error())
+	// 	return
+	// }
 
-	user_id, err := auth.ValidateToken(token, cfg.jwtsecret)
-	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, err.Error())
-		return
-	}
+	// user_id, err := auth.ValidateToken(token, cfg.Jwtsecret)
+	// if err != nil {
+	// 	respondWithError(w, http.StatusUnauthorized, err.Error())
+	// 	return
+	// }
+	user_id := r.Context().Value("authorid").(string)
 
 	commentidstr := chi.URLParam(r, "commentid")
 	Commentid, err := strconv.Atoi(commentidstr)

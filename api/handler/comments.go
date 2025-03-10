@@ -12,7 +12,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
-	auth "github.com/jaydee029/Verses/internal/auth"
 	"github.com/jaydee029/Verses/internal/database"
 	"github.com/jaydee029/Verses/pubsub"
 	"go.uber.org/zap"
@@ -40,21 +39,22 @@ type commentclient struct {
 
 func (cfg *handler) PostComment(w http.ResponseWriter, r *http.Request) {
 
-	token, err := auth.BearerHeader(r.Header)
-	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, err.Error())
-		return
-	}
+	// token, err := auth.BearerHeader(r.Header)
+	// if err != nil {
+	// 	respondWithError(w, http.StatusUnauthorized, err.Error())
+	// 	return
+	// }
 
-	authorid, err := auth.ValidateToken(token, cfg.jwtsecret)
-	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, err.Error())
-		return
-	}
+	// authorid, err := auth.ValidateToken(token, cfg.Jwtsecret)
+	// if err != nil {
+	// 	respondWithError(w, http.StatusUnauthorized, err.Error())
+	// 	return
+	// }
 
+	authorid := r.Context().Value("authorid").(string)
 	decoder := json.NewDecoder(r.Body)
 	params := body{}
-	err = decoder.Decode(&params)
+	err := decoder.Decode(&params)
 
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "parameters couldn't be decoded")
@@ -137,21 +137,22 @@ func (cfg *handler) PostComment(w http.ResponseWriter, r *http.Request) {
 
 func (cfg *handler) Getcomments(w http.ResponseWriter, r *http.Request) {
 
-	token, err := auth.BearerHeader(r.Header)
-	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, err.Error())
-		return
-	}
+	// token, err := auth.BearerHeader(r.Header)
+	// if err != nil {
+	// 	respondWithError(w, http.StatusUnauthorized, err.Error())
+	// 	return
+	// }
 
-	authorid, err := auth.ValidateToken(token, cfg.jwtsecret)
-	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, err.Error())
-		return
-	}
+	// authorid, err := auth.ValidateToken(token, cfg.Jwtsecret)
+	// if err != nil {
+	// 	respondWithError(w, http.StatusUnauthorized, err.Error())
+	// 	return
+	// }
+	authorid := r.Context().Value("authorid").(string)
 	proseidstr := chi.URLParam(r, "proseid")
 
 	var pgUUID pgtype.UUID
-	err = pgUUID.Scan(authorid)
+	err := pgUUID.Scan(authorid)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return

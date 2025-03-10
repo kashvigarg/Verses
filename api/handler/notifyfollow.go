@@ -60,7 +60,7 @@ func (cfg *handler) FollowNotification(followeeid, followerid pgtype.UUID) {
 
 		err = pgUUID.Scan(nid)
 		if err != nil {
-			log.Println("error while converting notification id to pgtype" + err.Error())
+			cfg.logger.Info("error while converting notification id to pgtype", zap.Error(err))
 			return
 		}
 
@@ -83,14 +83,14 @@ func (cfg *handler) FollowNotification(followeeid, followerid pgtype.UUID) {
 		generated_at := time.Now().UTC()
 		var pgtype_generated_at pgtype.Timestamp
 		if err = pgtype_generated_at.Scan(generated_at); err != nil {
-			log.Println("error while converting timestamp to pgtype:" + err.Error())
+			cfg.logger.Info("error while converting timestamp to pgtype:", zap.Error(err))
 			return
 		}
 
 		notificationid, err := qtx.NotificationExists(context.Background(), followeeid)
 
 		if err != nil {
-			log.Println("error while fetching notification id for the user:" + err.Error())
+			cfg.logger.Info("error while fetching notification id for the user:", zap.Error(err))
 			return
 		}
 
@@ -101,7 +101,7 @@ func (cfg *handler) FollowNotification(followeeid, followerid pgtype.UUID) {
 		})
 
 		if err != nil {
-			log.Println("error while updating notification:" + err.Error())
+			cfg.logger.Info("error while updating notification:", zap.Error(err))
 			return
 		}
 		notification.Actors = actors
@@ -111,7 +111,7 @@ func (cfg *handler) FollowNotification(followeeid, followerid pgtype.UUID) {
 	}
 
 	if err = tx.Commit(context.Background()); err != nil {
-		log.Println("error commmiting the transaction:" + err.Error())
+		cfg.logger.Info("error commmiting the transaction:", zap.Error(err))
 		return
 	}
 
