@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: rabbitmq-stateful
+  labels:
+    app: rabbitmq
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbitmq
+  template:
+    metadata:
+      labels:
+       app: rabbitmq
+    spec:
+      containers:
+        - name: rabbitmq
+          image: rabbitmq:3.13-management
+          port:
+            - containerPort: 5762
+              name: amqp
+            - containerPort: 15672
+              name: management
+          volumeMount:
+            - name: rabbitmq-storage
+              mountPath: var/lib/rabbitmq
+volumes:
+  - name: rabbitmq-storage
+    PersistantVolumeClaim:
+      claimName: rabbitmq-pvc
+        
+
+

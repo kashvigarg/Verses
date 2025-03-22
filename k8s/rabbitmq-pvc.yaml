@@ -1,0 +1,10 @@
+apiVersion: v1 
+kind: PersistantVolumeClaim
+metadata:
+  name: rabbitmq-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    request:
+      storage: 1Gi 

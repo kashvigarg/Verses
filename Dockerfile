@@ -3,16 +3,16 @@ FROM golang:1.21 AS build
 WORKDIR /app
 
 COPY go.* ./
-go mod download
+RUN go mod download
 
 COPY . .
-CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o Verses
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o Verses
 
 FROM build as test
 
 WORKDIR /app
 
-go test -v ./...
+RUN go test -v ./...
 
 FROM --platform=linux/amd64 debian:stable-slim
 

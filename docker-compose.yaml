@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  verses-frontend:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - API_URL=http://verses:8080  # Internal communication inside Docker
+      - NEXT_PUBLIC_API_URL=http://localhost:8100 # External access from the browser
+    depends_on:
+      - verses
+    restart: unless-stopped
+    networks:
+      - verses-network
+
+  verses:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_CONN=postgres://postgres:postgres@postgres:5432/versesdb?sslmode=disable
+      - RABBITMQ_CONN=amqp://guest:guest@rabbitmq:5672/
+      - JWT_SECRET=sometoken
+      - RED_KEY=sometoken
+      - PORT=8100
+    depends_on:
+      - postgres
+      - rabbitmq
+    restart: unless-stopped
+    networks:
+      - verses-network
+
+  postgres:
+    image: postgres:12
+    container_name: verses-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: versesdb
+    ports:
+      - "5432:5432"
+    networks:
+      - verses-network
+    volumes:
+      - verses-db-data:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: verses-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"   # AMQP protocol
+      - "15672:15672" # Management UI
+    networks:
+      - verses-network
+
+networks:
+  verses-network:
+    driver: bridge
+
+volumes:
+  verses-db-data:
+    driver: local

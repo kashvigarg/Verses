@@ -90,9 +90,10 @@ func main() {
 		}
 	})
 
-	s.Get("/healthz", apireadiness)
-	s.Post("/signup", h.CreateUser)
-	s.Post("/login", h.UserLogin)
+	t.Get("/admin/healthz", apireadiness)
+	t.Get("/admin/metrics", h.Metrics)
+	t.Post("/signup", h.CreateUser)
+	t.Post("/login", h.UserLogin)
 	s.Post("/prose", h.PostProse)
 	s.Get("/{username}/prose", h.GetProse)
 	s.Get("/prose/{proseId}", h.ProsebyId)
@@ -112,11 +113,10 @@ func main() {
 	s.Post("/notifications/{notificationid}/mark_as_read", h.ReadNotification)
 	s.Post("/notifications/mark_as_read", h.ReadNotifications)
 	s.Post("/gold/webhooks", h.Is_red)
-	t.Get("/metrics", h.Metrics)
 
 	r.Mount("/api", s)
 	s.With(middleware.Authmiddleware(h.Jwtsecret))
-	r.Mount("/admin", t)
+	r.Mount("/api", t)
 	sermux := corsmiddleware(r)
 
 	srv := &http.Server{
