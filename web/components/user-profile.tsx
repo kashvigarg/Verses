@@ -34,6 +34,41 @@ type UserProfileProps = {
   }
 }
 
+const dummy_user = {
+  name: "John Doe",
+  username: "johndoe123",
+  id: "usr_001",
+  follower: true,
+  follows_back: false,
+  followers: 150,
+  following: 100,
+  proses: [
+      {
+          id: "post_001",
+          body: "This is my first post!",
+          created_at: "2025-03-23T10:00:00Z",
+          updated_at: "2025-03-23T10:00:00Z",
+          mine: true,
+          liked: false,
+          likes_count: 5,
+          comments: 2
+      },
+      {
+          id: "post_002",
+          body: "Loving the JavaScript vibes!",
+          created_at: "2025-03-22T15:30:00Z",
+          updated_at: "2025-03-22T16:00:00Z",
+          mine: true,
+          liked: true,
+          likes_count: 20,
+          comments: 5
+      }
+  ]
+};
+
+const token = "dummy token";
+
+
 export function UserProfile({ user: initialUser }: UserProfileProps) {
   const [user, setUser] = useState(initialUser)
   const [isLoading, setIsLoading] = useState(false)

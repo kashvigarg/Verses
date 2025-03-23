@@ -4,12 +4,12 @@ import { Timeline } from "@/components/timeline"
 import { MainLayout } from "@/components/main-layout"
 
 export default function Home() {
-  const cookieStore = cookies()
-  const token = cookieStore.get("auth_token")
+  // const cookieStore = cookies()
+  // const token = cookieStore.get("auth_token")
 
-  if (!token) {
-    redirect("/login")
-  }
+  // if (!token) {
+  //   redirect("/login")
+  // }
 
   return (
     <MainLayout>

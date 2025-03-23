@@ -26,7 +26,7 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      await login(usernameOrEmail, password)
+      // await login(usernameOrEmail, password)
       router.push("/")
     } catch (error) {
       toast({

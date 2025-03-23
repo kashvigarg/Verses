@@ -8,7 +8,8 @@ export function middleware(request: NextRequest) {
   const isPublicPath = path === "/login" || path === "/signup"
 
   // Get the token from the cookies
-  const token = request.cookies.get("auth_token")?.value
+  const token = 'dummy'
+  // request.cookies.get("auth_token")?.value
 
   // Redirect to login if accessing a protected route without a token
   if (!isPublicPath && !token) {

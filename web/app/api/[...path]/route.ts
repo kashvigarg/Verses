@@ -4,7 +4,8 @@ import { type NextRequest, NextResponse } from "next/server"
 export async function GET(request: NextRequest, { params }: { params: { path: string[] } }) {
   const path = params.path.join("/")
   const { searchParams } = new URL(request.url)
-  const token = searchParams.get("token") || request.headers.get("Authorization")?.split(" ")[1]
+  const token = 'dummy'
+  // searchParams.get("token") || request.headers.get("Authorization")?.split(" ")[1]
 
   // Check if this is an SSE endpoint
   const isSSE = path === "timeline" || path === "notifications" || path.includes("/comments")

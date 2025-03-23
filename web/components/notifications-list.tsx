@@ -51,18 +51,27 @@ export function NotificationsList() {
 
   const fetchNotifications = async () => {
     try {
-      const response = await fetch("/api/notifications", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
+      // const response = await fetch("/api/notifications", {
+      //   headers: {
+      //     Authorization: `Bearer ${token}`,
+      //   },
+      // })
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch notifications")
-      }
+      // if (!response.ok) {
+      //   throw new Error("Failed to fetch notifications")
+      // }
 
-      const data = await response.json()
-      setNotifications(data)
+      const data = {
+        id: "notif_001",
+        userid: "user_123",
+        proseid: "prose_456",
+        actors: ["alice_wonder", "bob_coder"],
+        generated_at: "2025-03-23T14:00:00Z",
+        read: false,
+        type: "like" // Example: "like", "comment", "follow", etc.
+    };
+      // await response.json()
+      // setNotifications(data)
     } catch (err) {
       toast({
         title: "Error",

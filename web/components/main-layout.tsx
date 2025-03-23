@@ -12,8 +12,46 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { NotificationIndicator } from "@/components/notification-indicator"
 import { ComposeProseDialog } from "@/components/compose-prose-dialog"
 
+const useAuth1 = () => {
+  return {
+      user: {
+          name: "John Doe",
+          username: "johndoe123",
+          id: "usr_001",
+          follower: true,
+          follows_back: false,
+          followers: 250,
+          following: 180,
+          proses: [
+              {
+                  id: "post_001",
+                  body: "Just started learning JavaScript!",
+                  created_at: "2025-03-23T08:30:00Z",
+                  updated_at: "2025-03-23T09:00:00Z",
+                  mine: true,
+                  liked: true,
+                  likes_count: 120,
+                  comments: 15
+              },
+              {
+                  id: "post_002",
+                  body: "Coding late at night hits different.",
+                  created_at: "2025-03-22T22:45:00Z",
+                  updated_at: "2025-03-23T00:00:00Z",
+                  mine: true,
+                  liked: false,
+                  likes_count: 75,
+                  comments: 8
+              }
+          ]
+      },
+      logout: () => console.log("User logged out")
+  };
+};
+
+
 export function MainLayout({ children }: { children: React.ReactNode }) {
-  const { user, logout } = useAuth()
+  const { user, logout } = useAuth1()
   const pathname = usePathname()
   const [isComposeOpen, setIsComposeOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
