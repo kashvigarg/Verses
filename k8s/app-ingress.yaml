@@ -3,6 +3,7 @@ kind: Ingress
 metadata:
   name: app-ingress
   annotations:
+    nginx.ingress.kubernetes.io/limit-rps: "10"
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:

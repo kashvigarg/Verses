@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: verses
-        image: nn
+        image: verses
         envFrom:
         - configMapRef:
             name: verses-configmap 
