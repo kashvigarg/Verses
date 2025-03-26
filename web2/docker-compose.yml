@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  verses-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - API_URL=http://host.docker.internal:8080 # Change this to your Go backend port
+      - NEXT_PUBLIC_API_URL=http://localhost:3000
+    restart: unless-stopped
+
