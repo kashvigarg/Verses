@@ -174,8 +174,8 @@ func (cfg *Handler) UserLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondWithJson(w, http.StatusOK, res_login{
-		Username:      params.Username,
-		Email:         params.Email,
+		Username:      user.Username,
+		Email:         user.Email,
 		Token:         Token,
 		Refresh_token: Refresh_token,
 	})
