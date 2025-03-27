@@ -32,6 +32,7 @@ type User struct {
 	Following    int         `json:"following"`
 }
 type res_login struct {
+	Username      string `json:"username"`
 	Email         string `json:"email"`
 	Token         string `json:"token"`
 	Refresh_token string `json:"refresh_token"`
@@ -173,6 +174,7 @@ func (cfg *Handler) UserLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondWithJson(w, http.StatusOK, res_login{
+		Username:      params.Username,
 		Email:         params.Email,
 		Token:         Token,
 		Refresh_token: Refresh_token,
