@@ -19,7 +19,7 @@ func SetupRoutes(h *handler.Handler) *chi.Mux {
 
 	// Protected Routes
 	apiRouter.Group(func(r chi.Router) {
-		r.Use(middleware.Authmiddleware(h.Jwtsecret))
+		//r.Use(middleware.Authmiddleware(h.Jwtsecret))
 		r.Post("/prose", h.PostProse)
 		r.Get("/{username}/prose", h.GetProse)
 		r.Get("/prose/{proseId}", h.ProsebyId)

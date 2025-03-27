@@ -50,6 +50,13 @@ func Authmiddleware(tokensecret string) func(http.Handler) http.Handler {
 				return
 			}
 
+			if authorid == "" {
+				middlewareErrorresponse(w, http.StatusUnauthorized, errresponse{
+					Error: "Invalid user ID",
+				})
+				return
+			}
+
 			ctx := context.WithValue(r.Context(), userIDKey, authorid)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
