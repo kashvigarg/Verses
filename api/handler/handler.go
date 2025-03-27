@@ -14,7 +14,7 @@ type Clients struct {
 	commentClients      sync.Map
 }*/
 
-type handler struct {
+type Handler struct {
 	fileservercounts int
 	Jwtsecret        string
 	apiKey           string
@@ -25,8 +25,8 @@ type handler struct {
 	//Clients          *Clients
 }
 
-func New(fscounts int, jwt, apikey string, DBQueries *database.Queries, DBPool *pgxpool.Pool, pubsubconn *amqp.Connection, logger *zap.Logger) *handler {
-	return &handler{
+func New(fscounts int, jwt, apikey string, DBQueries *database.Queries, DBPool *pgxpool.Pool, pubsubconn *amqp.Connection, logger *zap.Logger) *Handler {
+	return &Handler{
 		fileservercounts: fscounts,
 		Jwtsecret:        jwt,
 		apiKey:           apikey,

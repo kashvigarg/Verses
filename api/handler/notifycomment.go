@@ -11,7 +11,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func (cfg *handler) CommentNotification(c Comment) {
+func (cfg *Handler) CommentNotification(c Comment) {
 
 	nid := uuid.New()
 	var nid_pgtype pgtype.UUID

@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"embed"
-	"io"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -12,9 +12,8 @@ import (
 	_ "github.com/lib/pq"
 	"go.uber.org/zap"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/jaydee029/Verses/api/handler"
-	"github.com/jaydee029/Verses/api/middleware"
+	"github.com/jaydee029/Verses/api/routes"
 	"github.com/jaydee029/Verses/internal/database"
 	"github.com/jaydee029/Verses/pubsub"
 	"github.com/joho/godotenv"
@@ -69,55 +68,62 @@ func main() {
 
 	port := os.Getenv("PORT")
 
-	r := chi.NewRouter()
-	s := chi.NewRouter()
-	t := chi.NewRouter()
+	router := routes.SetupRoutes(h)
 
-	fileconfig := h.Reqcounts(http.StripPrefix("/app", http.FileServer(http.Dir("./index.html"))))
-	r.Handle("/app", fileconfig)
-	r.Handle("/app/*", fileconfig)
+	staticFS, _ := fs.Sub(staticFiles, "static")
+	fileServer := http.FileServer(http.FS(staticFS))
+	router.Handle("/app", http.StripPrefix("/app", fileServer))
+	router.Handle("/app/*", http.StripPrefix("/app", fileServer))
 
-	r.Get("/app", func(w http.ResponseWriter, r *http.Request) {
-		file, err := staticFiles.Open("static/index.html")
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		defer file.Close()
-		//w.Write(file)
-		if _, err := io.Copy(w, file); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-	})
+	//r := chi.NewRouter()
+	// s := chi.NewRouter()
+	// t := chi.NewRouter()
 
-	t.Get("/admin/healthz", apireadiness)
-	t.Get("/admin/metrics", h.Metrics)
-	t.Post("/signup", h.CreateUser)
-	t.Post("/login", h.UserLogin)
-	s.Post("/prose", h.PostProse)
-	s.Get("/{username}/prose", h.GetProse)
-	s.Get("/prose/{proseId}", h.ProsebyId)
-	s.Post("/prose/{proseId}/togglelike", h.ToggleLike)
-	s.Get("/timeline", h.Timeline)
-	s.Post("/{proseid}/comments", h.PostComment)
-	s.Get("/{proseid}/comments", h.Getcomments)
-	s.Post("/comments/{commentid}/togglelike", h.ToggCommentLike)
-	s.Post("/refresh", h.VerifyRefresh)
-	s.Post("/revoke", h.RevokeToken)
-	s.Put("/users", h.UpdateUser)
-	s.Get("/users/{username}", h.GetUser)
-	s.Get("/users", h.GetUsers)
-	s.Post("/users/{username}/toggle_follow", h.ToggleFollow)
-	s.Delete("/prose/{proseId}", h.DeleteProse)
-	s.Get("/notifications", h.Notifications)
-	s.Post("/notifications/{notificationid}/mark_as_read", h.ReadNotification)
-	s.Post("/notifications/mark_as_read", h.ReadNotifications)
-	s.Post("/gold/webhooks", h.Is_red)
+	// fileconfig := h.Reqcounts(http.StripPrefix("/app", http.FileServer(http.Dir("./index.html"))))
+	// r.Handle("/app", fileconfig)
+	// r.Handle("/app/*", fileconfig)
 
-	r.Mount("/api", s)
-	s.With(middleware.Authmiddleware(h.Jwtsecret))
-	r.Mount("/api", t)
-	sermux := corsmiddleware(r)
+	// r.Get("/app", func(w http.ResponseWriter, r *http.Request) {
+	// 	file, err := staticFiles.Open("static/index.html")
+	// 	if err != nil {
+	// 		http.Error(w, err.Error(), http.StatusInternalServerError)
+	// 		return
+	// 	}
+	// 	defer file.Close()
+	// 	//w.Write(file)
+	// 	if _, err := io.Copy(w, file); err != nil {
+	// 		http.Error(w, err.Error(), http.StatusInternalServerError)
+	// 	}
+	// })
+
+	// t.Get("/admin/healthz", middleware.Apireadiness)
+	// t.Get("/admin/metrics", h.Metrics)
+	// t.Post("/signup", h.CreateUser)
+	// t.Post("/login", h.UserLogin)
+	// s.Post("/prose", h.PostProse)
+	// s.Get("/{username}/prose", h.GetProse)
+	// s.Get("/prose/{proseId}", h.ProsebyId)
+	// s.Post("/prose/{proseId}/togglelike", h.ToggleLike)
+	// s.Get("/timeline", h.Timeline)
+	// s.Post("/{proseid}/comments", h.PostComment)
+	// s.Get("/{proseid}/comments", h.Getcomments)
+	// s.Post("/comments/{commentid}/togglelike", h.ToggCommentLike)
+	// s.Post("/refresh", h.VerifyRefresh)
+	// s.Post("/revoke", h.RevokeToken)
+	// s.Put("/users", h.UpdateUser)
+	// s.Get("/users/{username}", h.GetUser)
+	// s.Get("/users", h.GetUsers)
+	// s.Post("/users/{username}/toggle_follow", h.ToggleFollow)
+	// s.Delete("/prose/{proseId}", h.DeleteProse)
+	// s.Get("/notifications", h.Notifications)
+	// s.Post("/notifications/{notificationid}/mark_as_read", h.ReadNotification)
+	// s.Post("/notifications/mark_as_read", h.ReadNotifications)
+	// s.Post("/gold/webhooks", h.Is_red)
+
+	// r.Mount("/api", s)
+	// s.With(middleware.Authmiddleware(h.Jwtsecret))
+	// r.Mount("/api", t)
+	sermux := corsmiddleware(router)
 
 	srv := &http.Server{
 		Addr:    ":" + port,

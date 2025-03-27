@@ -37,7 +37,7 @@ type commentclient struct {
 	Userid   pgtype.UUID
 }*/
 
-func (cfg *handler) PostComment(w http.ResponseWriter, r *http.Request) {
+func (cfg *Handler) PostComment(w http.ResponseWriter, r *http.Request) {
 
 	// token, err := auth.BearerHeader(r.Header)
 	// if err != nil {
@@ -135,7 +135,7 @@ func (cfg *handler) PostComment(w http.ResponseWriter, r *http.Request) {
 	respondWithJson(w, http.StatusAccepted, c)
 }
 
-func (cfg *handler) Getcomments(w http.ResponseWriter, r *http.Request) {
+func (cfg *Handler) Getcomments(w http.ResponseWriter, r *http.Request) {
 
 	// token, err := auth.BearerHeader(r.Header)
 	// if err != nil {
@@ -220,7 +220,7 @@ func (cfg *handler) Getcomments(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (cfg *handler) Commentcreation(c Comment) {
+func (cfg *Handler) Commentcreation(c Comment) {
 
 	user, err := cfg.DB.GetUserbyId(context.Background(), c.Userid)
 	if err != nil {
@@ -242,7 +242,7 @@ func (cfg *handler) Commentcreation(c Comment) {
 	go cfg.Broadcastcomments(c)
 }
 
-func (cfg *handler) Broadcastcomments(c Comment) {
+func (cfg *Handler) Broadcastcomments(c Comment) {
 	err := pubsub.Publish(cfg.pubsub, "comment_direct", "comment_item."+uuid.UUID(c.Proseid.Bytes).String(), c)
 	if err != nil {
 		cfg.logger.Info("error while publishing commment item:", zap.Error(err))

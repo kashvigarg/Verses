@@ -10,7 +10,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func (cfg *handler) subscribeTotimeline(w http.ResponseWriter, ctx context.Context, userid pgtype.UUID) {
+func (cfg *Handler) subscribeTotimeline(w http.ResponseWriter, ctx context.Context, userid pgtype.UUID) {
 
 	f, ok := w.(http.Flusher)
 
@@ -45,7 +45,7 @@ func (cfg *handler) subscribeTotimeline(w http.ResponseWriter, ctx context.Conte
 
 }
 
-func (cfg *handler) subscribeTocomments(w http.ResponseWriter, ctx context.Context, _ pgtype.UUID, proseid pgtype.UUID) {
+func (cfg *Handler) subscribeTocomments(w http.ResponseWriter, ctx context.Context, _ pgtype.UUID, proseid pgtype.UUID) {
 
 	f, ok := w.(http.Flusher)
 
@@ -83,7 +83,7 @@ func (cfg *handler) subscribeTocomments(w http.ResponseWriter, ctx context.Conte
 
 }
 
-func (cfg *handler) subscribeTonotifications(w http.ResponseWriter, ctx context.Context, userid pgtype.UUID) {
+func (cfg *Handler) subscribeTonotifications(w http.ResponseWriter, ctx context.Context, userid pgtype.UUID) {
 
 	f, ok := w.(http.Flusher)
 

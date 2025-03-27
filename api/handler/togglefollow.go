@@ -15,7 +15,7 @@ type togglefollow struct {
 	Followers_count int  `json:"followers_count"`
 }
 
-func (cfg *handler) ToggleFollow(w http.ResponseWriter, r *http.Request) {
+func (cfg *Handler) ToggleFollow(w http.ResponseWriter, r *http.Request) {
 	username := chi.URLParam(r, "username")
 
 	// token, err := auth.BearerHeader(r.Header)

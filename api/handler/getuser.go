@@ -11,7 +11,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func (cfg *handler) GetUser(w http.ResponseWriter, r *http.Request) {
+func (cfg *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 
 	// token, err := auth.BearerHeader(r.Header)
 	// if err != nil {
@@ -57,7 +57,7 @@ func (cfg *handler) GetUser(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (cfg *handler) GetUsers(w http.ResponseWriter, r *http.Request) {
+func (cfg *Handler) GetUsers(w http.ResponseWriter, r *http.Request) {
 
 	// token, err := auth.BearerHeader(r.Header)
 	// if err != nil {

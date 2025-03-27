@@ -25,7 +25,7 @@ type timelineclient struct {
 	Userid   pgtype.UUID
 }*/
 
-func (cfg *handler) Timeline(w http.ResponseWriter, r *http.Request) {
+func (cfg *Handler) Timeline(w http.ResponseWriter, r *http.Request) {
 	// token, err := auth.BearerHeader(r.Header)
 	// if err != nil {
 	// 	respondWithError(w, http.StatusUnauthorized, err.Error())
@@ -123,7 +123,7 @@ func (cfg *handler) Timeline(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (cfg *handler) Broadcasttimeline(ti timeline_item) {
+func (cfg *Handler) Broadcasttimeline(ti timeline_item) {
 
 	err := pubsub.Publish(cfg.pubsub, "timeline_direct", "timeline_item"+uuid.UUID(ti.Userid.Bytes).String(), ti)
 	if err != nil {

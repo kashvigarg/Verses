@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func (cfg *handler) Metrics(w http.ResponseWriter, _ *http.Request) {
+func (cfg *Handler) Metrics(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Add("Content-Type", "text/html;")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(fmt.Sprintf(`
@@ -20,7 +20,7 @@ func (cfg *handler) Metrics(w http.ResponseWriter, _ *http.Request) {
 	`, cfg.fileservercounts)))
 }
 
-func (cfg *handler) Reqcounts(app http.Handler) http.Handler {
+func (cfg *Handler) Reqcounts(app http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cfg.fileservercounts++
 		app.ServeHTTP(w, r)

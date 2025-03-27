@@ -16,7 +16,7 @@ type Token struct {
 	Token string `json:"token"`
 }
 
-func (cfg *handler) RevokeToken(w http.ResponseWriter, r *http.Request) {
+func (cfg *Handler) RevokeToken(w http.ResponseWriter, r *http.Request) {
 
 	token, err := auth.BearerHeader(r.Header)
 
@@ -44,7 +44,7 @@ func (cfg *handler) RevokeToken(w http.ResponseWriter, r *http.Request) {
 	respondWithJson(w, http.StatusOK, "Token Revoked")
 }
 
-func (cfg *handler) VerifyRefresh(w http.ResponseWriter, r *http.Request) {
+func (cfg *Handler) VerifyRefresh(w http.ResponseWriter, r *http.Request) {
 
 	token, err := auth.BearerHeader(r.Header)
 
@@ -99,7 +99,7 @@ func (cfg *handler) VerifyRefresh(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (cfg *handler) Is_red(w http.ResponseWriter, r *http.Request) {
+func (cfg *Handler) Is_red(w http.ResponseWriter, r *http.Request) {
 	type user_struct struct {
 		User_id pgtype.UUID `json:"user_id"`
 	}

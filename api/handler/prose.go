@@ -12,7 +12,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func (cfg *handler) GetProse(w http.ResponseWriter, r *http.Request) {
+func (cfg *Handler) GetProse(w http.ResponseWriter, r *http.Request) {
 	// token, err := auth.BearerHeader(r.Header)
 	// if err != nil {
 	// 	respondWithError(w, http.StatusUnauthorized, err.Error())
@@ -94,7 +94,7 @@ func (cfg *handler) GetProse(w http.ResponseWriter, r *http.Request) {
 	respondWithJson(w, http.StatusOK, prose)
 }
 
-func (cfg *handler) ProsebyId(w http.ResponseWriter, r *http.Request) {
+func (cfg *Handler) ProsebyId(w http.ResponseWriter, r *http.Request) {
 	// token, err := auth.BearerHeader(r.Header)
 	// if err != nil {
 	// 	respondWithError(w, http.StatusUnauthorized, err.Error())
@@ -150,7 +150,7 @@ func (cfg *handler) ProsebyId(w http.ResponseWriter, r *http.Request) {
 	respondWithJson(w, http.StatusOK, prose)
 }
 
-func (cfg *handler) DeleteProse(w http.ResponseWriter, r *http.Request) {
+func (cfg *Handler) DeleteProse(w http.ResponseWriter, r *http.Request) {
 	token, err := auth.BearerHeader(r.Header)
 
 	if err != nil {

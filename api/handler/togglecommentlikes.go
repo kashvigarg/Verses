@@ -15,7 +15,7 @@ type toggCommentLike struct {
 	Likes_count int  `json:"likes_count"`
 }
 
-func (cfg *handler) ToggCommentLike(w http.ResponseWriter, r *http.Request) {
+func (cfg *Handler) ToggCommentLike(w http.ResponseWriter, r *http.Request) {
 
 	// token, err := auth.BearerHeader(r.Header)
 	// if err != nil {

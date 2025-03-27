@@ -77,7 +77,14 @@ export async function GET(request: NextRequest, { params }: { params: { path: st
 }
 
 export async function POST(request: NextRequest, { params }: { params: { path: string[] } }) {
-  const path = params.path.join("/")
+
+  const url = new URL(request.url);
+  const path = url.pathname.replace("/api/", ""); // Remove "/api/" prefix
+
+  if (!path) {
+    return new Response("Invalid request", { status: 400 });
+  }
+  //const path = params.path.join("/")
   const token = request.headers.get("Authorization")?.split(" ")[1]
   const body = await request.json()
 

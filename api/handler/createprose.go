@@ -32,7 +32,7 @@ type body struct {
 	Body string `json:"body"`
 }
 
-func (cfg *handler) PostProse(w http.ResponseWriter, r *http.Request) {
+func (cfg *Handler) PostProse(w http.ResponseWriter, r *http.Request) {
 
 	// token, err := auth.BearerHeader(r.Header)
 
@@ -149,7 +149,7 @@ func (cfg *handler) PostProse(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (cfg *handler) prosecreation(p Prose) {
+func (cfg *Handler) prosecreation(p Prose) {
 	u, err := cfg.DB.GetUserbyId(context.Background(), p.Userid)
 
 	if err != nil {
@@ -167,7 +167,7 @@ func (cfg *handler) prosecreation(p Prose) {
 	go cfg.notifypostmentions(p)
 }
 
-func (cfg *handler) fanoutprose(p Prose) {
+func (cfg *Handler) fanoutprose(p Prose) {
 
 	items, err := cfg.DB.FetchTimelineItems(context.Background(), database.FetchTimelineItemsParams{
 		ProseID:    p.ID,

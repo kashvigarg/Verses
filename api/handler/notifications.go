@@ -30,7 +30,7 @@ type Notification struct {
 		Userid        pgtype.UUID
 	}
 */
-func (cfg *handler) Notifications(w http.ResponseWriter, r *http.Request) {
+func (cfg *Handler) Notifications(w http.ResponseWriter, r *http.Request) {
 	// token, err := auth.BearerHeader(r.Header)
 
 	// if err != nil {
@@ -125,7 +125,7 @@ func (cfg *handler) Notifications(w http.ResponseWriter, r *http.Request) {
 	respondWithJson(w, http.StatusOK, Notifications)
 }
 
-func (cfg *handler) ReadNotification(w http.ResponseWriter, r *http.Request) {
+func (cfg *Handler) ReadNotification(w http.ResponseWriter, r *http.Request) {
 
 	// token, err := auth.BearerHeader(r.Header)
 
@@ -174,7 +174,7 @@ func (cfg *handler) ReadNotification(w http.ResponseWriter, r *http.Request) {
 	respondWithJson(w, http.StatusNoContent, "Notification Read")
 }
 
-func (cfg *handler) ReadNotifications(w http.ResponseWriter, r *http.Request) {
+func (cfg *Handler) ReadNotifications(w http.ResponseWriter, r *http.Request) {
 
 	// token, err := auth.BearerHeader(r.Header)
 
@@ -207,7 +207,7 @@ func (cfg *handler) ReadNotifications(w http.ResponseWriter, r *http.Request) {
 	respondWithJson(w, http.StatusNoContent, "Notifications Read")
 }
 
-func (cfg *handler) Broadcastnotifications(n Notification) {
+func (cfg *Handler) Broadcastnotifications(n Notification) {
 
 	err := pubsub.Publish(cfg.pubsub, "notification_direct", "notification_item."+uuid.UUID(n.Userid.Bytes).String(), n)
 	if err != nil {

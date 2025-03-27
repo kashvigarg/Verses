@@ -11,7 +11,7 @@ import (
 	"github.com/jaydee029/Verses/internal/database"
 )
 
-func (cfg *handler) notifycommentmentions(c Comment) {
+func (cfg *Handler) notifycommentmentions(c Comment) {
 
 	mentionedusers, err := utils.Mentions(c.Body)
 	if err != nil {
@@ -67,7 +67,7 @@ type Notification struct {
 }
 */
 
-func (cfg *handler) notifypostmentions(p Prose) {
+func (cfg *Handler) notifypostmentions(p Prose) {
 
 	mentionedusers, err := utils.Mentions(p.Body)
 	if err != nil {

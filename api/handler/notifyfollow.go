@@ -11,7 +11,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func (cfg *handler) FollowNotification(followeeid, followerid pgtype.UUID) {
+func (cfg *Handler) FollowNotification(followeeid, followerid pgtype.UUID) {
 
 	tx, err := cfg.DBpool.Begin(context.Background())
 	if err != nil {

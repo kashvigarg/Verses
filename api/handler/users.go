@@ -43,7 +43,7 @@ type UserInput struct {
 	Username string `json:"username"`
 }
 
-func (cfg *handler) CreateUser(w http.ResponseWriter, r *http.Request) {
+func (cfg *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	decoder := json.NewDecoder(r.Body)
 	params := UserInput{}
@@ -133,7 +133,7 @@ func (cfg *handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (cfg *handler) UserLogin(w http.ResponseWriter, r *http.Request) {
+func (cfg *Handler) UserLogin(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	params := Input{}
 	err := decoder.Decode(&params)
@@ -180,7 +180,7 @@ func (cfg *handler) UserLogin(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (cfg *handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
+func (cfg *Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	// token, err := auth.BearerHeader(r.Header)
 
