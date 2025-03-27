@@ -108,8 +108,6 @@ func main() {
 	// s.Post("/{proseid}/comments", h.PostComment)
 	// s.Get("/{proseid}/comments", h.Getcomments)
 	// s.Post("/comments/{commentid}/togglelike", h.ToggCommentLike)
-	// s.Post("/refresh", h.VerifyRefresh)
-	// s.Post("/revoke", h.RevokeToken)
 	// s.Put("/users", h.UpdateUser)
 	// s.Get("/users/{username}", h.GetUser)
 	// s.Get("/users", h.GetUsers)
@@ -119,6 +117,8 @@ func main() {
 	// s.Post("/notifications/{notificationid}/mark_as_read", h.ReadNotification)
 	// s.Post("/notifications/mark_as_read", h.ReadNotifications)
 	// s.Post("/gold/webhooks", h.Is_red)
+	//s.Post("/refresh", h.VerifyRefresh)
+	// s.Post("/revoke", h.RevokeToken)
 
 	// r.Mount("/api", s)
 	// s.With(middleware.Authmiddleware(h.Jwtsecret))
