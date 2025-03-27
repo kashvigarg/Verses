@@ -7,31 +7,31 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgtype"
-	auth "github.com/jaydee029/Verses/internal/auth"
+	"github.com/jaydee029/Verses/api/middleware"
 	"github.com/jaydee029/Verses/internal/database"
 	"go.uber.org/zap"
 )
 
 func (cfg *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 
-	token, err := auth.BearerHeader(r.Header)
-	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, err.Error())
-		return
-	}
+	// token, err := auth.BearerHeader(r.Header)
+	// if err != nil {
+	// 	respondWithError(w, http.StatusUnauthorized, err.Error())
+	// 	return
+	// }
 
-	authorid, err := auth.ValidateToken(token, cfg.Jwtsecret)
-	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, err.Error())
-		return
-	}
+	// authorid, err := auth.ValidateToken(token, cfg.Jwtsecret)
+	// if err != nil {
+	// 	respondWithError(w, http.StatusUnauthorized, err.Error())
+	// 	return
+	// }
 
-	//authorid := r.Context().Value("authorid").(string)
+	authorid := r.Context().Value(middleware.UserIDKey).(string)
 
 	username := chi.URLParam(r, "username")
 
 	var pgUUID pgtype.UUID
-	err = pgUUID.Scan(authorid)
+	err := pgUUID.Scan(authorid)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -72,7 +72,7 @@ func (cfg *Handler) GetUsers(w http.ResponseWriter, r *http.Request) {
 	// 	return
 	// }
 
-	authorid := r.Context().Value("authorid").(string)
+	authorid := r.Context().Value(middleware.UserIDKey).(string)
 	after := r.URL.Query().Get("username")
 
 	var pgUUID pgtype.UUID

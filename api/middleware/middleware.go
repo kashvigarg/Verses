@@ -11,7 +11,9 @@ import (
 
 type contextKey string
 
-const userIDKey contextKey = "userID"
+const UserIDKey contextKey = "userID"
+
+//type UserIDKey struct{}
 
 type errresponse struct {
 	Error string `json:"error"`
@@ -50,14 +52,14 @@ func Authmiddleware(tokensecret string) func(http.Handler) http.Handler {
 				return
 			}
 
-			if authorid == "" {
-				middlewareErrorresponse(w, http.StatusUnauthorized, errresponse{
-					Error: "Invalid user ID",
-				})
-				return
-			}
+			// if authorid == "" {
+			// 	middlewareErrorresponse(w, http.StatusUnauthorized, errresponse{
+			// 		Error: "Invalid user ID",
+			// 	})
+			// 	return
+			// }
 
-			ctx := context.WithValue(r.Context(), userIDKey, authorid)
+			ctx := context.WithValue(r.Context(), UserIDKey, authorid)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
