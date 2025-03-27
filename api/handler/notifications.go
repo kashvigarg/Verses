@@ -9,6 +9,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jaydee029/Verses/api/middleware"
 	"github.com/jaydee029/Verses/internal/database"
 	"github.com/jaydee029/Verses/pubsub"
 	"go.uber.org/zap"
@@ -44,7 +45,7 @@ func (cfg *Handler) Notifications(w http.ResponseWriter, r *http.Request) {
 	// 	return
 	// }
 
-	useridstr := r.Context().Value("authorid").(string)
+	useridstr := r.Context().Value(middleware.UserIDKey).(string)
 
 	var userid pgtype.UUID
 	err := userid.Scan(useridstr)
@@ -140,7 +141,7 @@ func (cfg *Handler) ReadNotification(w http.ResponseWriter, r *http.Request) {
 	// 	return
 	// }
 
-	useridstr := r.Context().Value("authorid").(string)
+	useridstr := r.Context().Value(middleware.UserIDKey).(string)
 	notificationidstr := chi.URLParam(r, "notificationid")
 
 	if notificationidstr == "" {
@@ -189,7 +190,7 @@ func (cfg *Handler) ReadNotifications(w http.ResponseWriter, r *http.Request) {
 	// 	return
 	// }
 
-	useridstr := r.Context().Value("authorid").(string)
+	useridstr := r.Context().Value(middleware.UserIDKey).(string)
 	var userid pgtype.UUID
 	err := userid.Scan(useridstr)
 	if err != nil {

@@ -45,6 +45,7 @@ func Authmiddleware(tokensecret string) func(http.Handler) http.Handler {
 			}
 
 			authorid, err := auth.ValidateToken(token, tokensecret)
+			log.Println(authorid)
 			if err != nil {
 				middlewareErrorresponse(w, http.StatusUnauthorized, errresponse{
 					Error: err.Error(),

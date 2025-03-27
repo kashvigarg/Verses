@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jaydee029/Verses/api/middleware"
 	"github.com/jaydee029/Verses/internal/database"
 	"github.com/jaydee029/Verses/utils"
 	"go.uber.org/zap"
@@ -47,7 +48,7 @@ func (cfg *Handler) PostProse(w http.ResponseWriter, r *http.Request) {
 	// 	return
 	// }
 
-	authorid := r.Context().Value("authorid").(string)
+	authorid := r.Context().Value(middleware.UserIDKey).(string)
 
 	decoder := json.NewDecoder(r.Body)
 	params := body{}

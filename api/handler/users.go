@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jaydee029/Verses/api/middleware"
 	auth "github.com/jaydee029/Verses/internal/auth"
 	"github.com/jaydee029/Verses/internal/database"
 	validate "github.com/jaydee029/Verses/internal/validation"
@@ -210,7 +211,7 @@ func (cfg *Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	// 	return
 	// }
 
-	Idstr := r.Context().Value("authorid").(string)
+	Idstr := r.Context().Value(middleware.UserIDKey).(string)
 	var pgUUID pgtype.UUID
 
 	err := pgUUID.Scan(Idstr)

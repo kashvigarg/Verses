@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jaydee029/Verses/api/middleware"
 	"github.com/jaydee029/Verses/internal/database"
 	"go.uber.org/zap"
 )
@@ -15,6 +16,8 @@ type togglelike struct {
 }
 
 func (cfg *Handler) ToggleLike(w http.ResponseWriter, r *http.Request) {
+
+	useridstr := r.Context().Value(middleware.UserIDKey).(string)
 
 	proseidstr := chi.URLParam(r, "proseId")
 	// token, err := auth.BearerHeader(r.Header)
@@ -28,7 +31,6 @@ func (cfg *Handler) ToggleLike(w http.ResponseWriter, r *http.Request) {
 	// 	respondWithError(w, http.StatusUnauthorized, err.Error())
 	// 	return
 	// }
-	useridstr := r.Context().Value("authorid").(string)
 
 	var user_id pgtype.UUID
 

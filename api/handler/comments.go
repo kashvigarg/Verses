@@ -12,6 +12,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jaydee029/Verses/api/middleware"
 	"github.com/jaydee029/Verses/internal/database"
 	"github.com/jaydee029/Verses/pubsub"
 	"go.uber.org/zap"
@@ -51,7 +52,7 @@ func (cfg *Handler) PostComment(w http.ResponseWriter, r *http.Request) {
 	// 	return
 	// }
 
-	authorid := r.Context().Value("authorid").(string)
+	authorid := r.Context().Value(middleware.UserIDKey).(string)
 	decoder := json.NewDecoder(r.Body)
 	params := body{}
 	err := decoder.Decode(&params)
@@ -148,7 +149,7 @@ func (cfg *Handler) Getcomments(w http.ResponseWriter, r *http.Request) {
 	// 	respondWithError(w, http.StatusUnauthorized, err.Error())
 	// 	return
 	// }
-	authorid := r.Context().Value("authorid").(string)
+	authorid := r.Context().Value(middleware.UserIDKey).(string)
 	proseidstr := chi.URLParam(r, "proseid")
 
 	var pgUUID pgtype.UUID

@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jaydee029/Verses/api/middleware"
 	"github.com/jaydee029/Verses/internal/database"
 	"go.uber.org/zap"
 )
@@ -29,7 +30,7 @@ func (cfg *Handler) ToggleFollow(w http.ResponseWriter, r *http.Request) {
 	// 	respondWithError(w, http.StatusUnauthorized, err.Error())
 	// 	return
 	// }
-	follower_id := r.Context().Value("authorid").(string)
+	follower_id := r.Context().Value(middleware.UserIDKey).(string)
 
 	var pgUUID pgtype.UUID
 
