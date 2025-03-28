@@ -244,7 +244,7 @@ func (cfg *Handler) Commentcreation(c Comment) {
 }
 
 func (cfg *Handler) Broadcastcomments(c Comment) {
-	err := pubsub.Publish(cfg.pubsub, "comment_direct", "comment_item."+uuid.UUID(c.Proseid.Bytes).String(), c)
+	err := pubsub.Publish(cfg.pubsub, "comments_direct", "comment_item."+uuid.UUID(c.Proseid.Bytes).String(), c)
 	if err != nil {
 		cfg.logger.Info("error while publishing commment item:", zap.Error(err))
 		return

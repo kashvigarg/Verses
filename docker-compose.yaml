@@ -8,8 +8,8 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - API_URL=http://verses:8080/api  # Internal communication inside Docker
-      - NEXT_PUBLIC_API_URL=http://localhost:8100 # External access from the browser
+      - API_URL=http://verses:8080  # Internal communication inside Docker
+      - NEXT_PUBLIC_API_URL=http://localhost:3000 # External access from the browser
     depends_on:
       - verses
     restart: unless-stopped

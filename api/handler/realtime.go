@@ -53,7 +53,7 @@ func (cfg *Handler) subscribeTocomments(w http.ResponseWriter, ctx context.Conte
 		respondWithError(w, http.StatusBadRequest, "streaming unsupported")
 	}
 
-	subch, err := pubsub.Consume[Comment](cfg.pubsub, "comment_direct", "comment_queue", "comment_item."+uuid.UUID(proseid.Bytes).String())
+	subch, err := pubsub.Consume[Comment](cfg.pubsub, "comments_direct", "comment_queue", "comment_item."+uuid.UUID(proseid.Bytes).String())
 	if err != nil {
 		cfg.logger.Info("error consuming items:", zap.Error(err))
 	}
@@ -90,7 +90,7 @@ func (cfg *Handler) subscribeTonotifications(w http.ResponseWriter, ctx context.
 	if !ok {
 		respondWithError(w, http.StatusBadRequest, "streaming unsupported")
 	}
-	subch, err := pubsub.Consume[Notification](cfg.pubsub, "notification_direct", "notification_queue", "notification_item."+uuid.UUID(userid.Bytes).String())
+	subch, err := pubsub.Consume[Notification](cfg.pubsub, "notifications_direct", "notification_queue", "notification_item."+uuid.UUID(userid.Bytes).String())
 	if err != nil {
 		cfg.logger.Info("error consuming items: %v", zap.Error(err))
 	}

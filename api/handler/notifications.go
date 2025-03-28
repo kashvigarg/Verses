@@ -210,7 +210,7 @@ func (cfg *Handler) ReadNotifications(w http.ResponseWriter, r *http.Request) {
 
 func (cfg *Handler) Broadcastnotifications(n Notification) {
 
-	err := pubsub.Publish(cfg.pubsub, "notification_direct", "notification_item."+uuid.UUID(n.Userid.Bytes).String(), n)
+	err := pubsub.Publish(cfg.pubsub, "notifications_direct", "notification_item."+uuid.UUID(n.Userid.Bytes).String(), n)
 	if err != nil {
 		cfg.logger.Info("error publishing notification item:", zap.Error(err))
 		return
