@@ -2,7 +2,8 @@ import { type NextRequest, NextResponse } from "next/server"
 
 // This is a proxy API route that forwards requests to the backend
 export async function GET(request: NextRequest, { params }: { params: { path: string[] } }) {
-  const path = params.path.join("/")
+  const url = new URL(request.url);
+  const path = url.pathname.replace("/api/", ""); 
   const { searchParams } = new URL(request.url)
   const token = searchParams.get("token") || request.headers.get("Authorization")?.split(" ")[1]
 
@@ -77,7 +78,8 @@ export async function GET(request: NextRequest, { params }: { params: { path: st
 }
 
 export async function POST(request: NextRequest, { params }: { params: { path: string[] } }) {
-  const path = params.path.join("/")
+  const url = new URL(request.url);
+  const path = url.pathname.replace("/api/", ""); 
   const token = request.headers.get("Authorization")?.split(" ")[1]
   const body = await request.json()
 
@@ -100,7 +102,8 @@ export async function POST(request: NextRequest, { params }: { params: { path: s
 }
 
 export async function DELETE(request: NextRequest, { params }: { params: { path: string[] } }) {
-  const path = params.path.join("/")
+  const url = new URL(request.url);
+  const path = url.pathname.replace("/api/", ""); 
   const token = request.headers.get("Authorization")?.split(" ")[1]
 
   try {
@@ -124,7 +127,8 @@ export async function DELETE(request: NextRequest, { params }: { params: { path:
 }
 
 export async function PUT(request: NextRequest, { params }: { params: { path: string[] } }) {
-  const path = params.path.join("/")
+  const url = new URL(request.url);
+  const path = url.pathname.replace("/api/", ""); 
   const token = request.headers.get("Authorization")?.split(" ")[1]
   const body = await request.json()
 
