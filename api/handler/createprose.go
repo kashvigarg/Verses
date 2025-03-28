@@ -133,13 +133,21 @@ func (cfg *Handler) PostProse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var tl timeline_item
+	tl := timeline_item{
+		Post: Prose{
+			ID:     post_pgUUID,
+			Mine:   true,
+			Userid: pgUUID,
+			Body:   cleanText,
+			User:   &User{},
+		},
+	}
 
-	//tl.Userid = pgUUID
-	tl.Post.ID = post_pgUUID
-	tl.Post.Mine = true
-	tl.Post.Userid = pgUUID
-	tl.Post.Body = cleanText
+	// //tl.Userid = pgUUID
+	// tl.Post.ID = post_pgUUID
+	// tl.Post.Mine = true
+	// tl.Post.Userid = pgUUID
+	// tl.Post.Body = cleanText
 
 	err = tx.Commit(r.Context())
 	if err != nil {
@@ -157,6 +165,8 @@ func (cfg *Handler) prosecreation(p Prose) {
 		cfg.logger.Info("Error fetching user by Id:", zap.Error(err))
 		return
 	}
+
+	//log.Print(p)
 
 	p.User.Email = u.Email
 	p.User.ID = u.ID

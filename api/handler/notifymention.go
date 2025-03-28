@@ -93,7 +93,7 @@ func (cfg *Handler) notifypostmentions(p Prose) {
 	})
 
 	if err != nil {
-		cfg.logger.Info("Error fecthing post mentions from the database:", zap.Error(err))
+		cfg.logger.Info("Error fetching post mentions from the database:", zap.Error(err))
 		return
 	}
 
