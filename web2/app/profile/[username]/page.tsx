@@ -5,7 +5,7 @@ import { UserProfile } from "@/components/user-profile"
 import { getUserProfile } from "@/lib/api"
 
 export default async function ProfilePage({ params }: { params: { username: string } }) {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const token = cookieStore.get("auth_token")
 
   if (!token) {

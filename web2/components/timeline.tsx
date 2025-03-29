@@ -10,20 +10,22 @@ import { AlertCircle, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useSSE } from "@/lib/use-sse"
 
+type Prose = {
+  id: string
+  body: string
+  created_at: string
+  updated_at: string
+  username: string
+  mine: boolean
+  liked: boolean
+  likes_count: number
+  comments: number
+}
+
 type TimelineItem = {
   id: number
   userid?: string
-  prose: {
-    id: string
-    body: string
-    created_at: string
-    updated_at: string
-    username: string
-    mine: boolean
-    liked: boolean
-    likes_count: number
-    comments: number
-  }
+  prose: Prose
 }
 
 export function Timeline() {
@@ -37,6 +39,7 @@ export function Timeline() {
   const { data, error: sseError } = useSSE<TimelineItem[]>("/api/timeline", token, {
     onMessage: (data) => {
       if (data) {
+        refreshTimeline()
         setTimelineItems(data)
         setIsLoading(false)
       }

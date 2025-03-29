@@ -1,10 +1,9 @@
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { MainLayout } from "@/components/main-layout"
-import { ProseDetail } from "@/components/prose-detail"
-import { getProseById } from "@/lib/api"
+import { UsersList } from "@/components/users-list"
 
-export default async function ProsePage({ params }: { params: { proseId: string } }) {
+export default async function UsersPage() {
   const cookieStore = await cookies()
   const token = cookieStore.get("auth_token")
 
@@ -12,11 +11,9 @@ export default async function ProsePage({ params }: { params: { proseId: string 
     redirect("/login")
   }
 
-  const proseData = await getProseById(params.proseId, token.value)
-
   return (
     <MainLayout>
-      <ProseDetail prose={proseData} />
+      <UsersList />
     </MainLayout>
   )
 }

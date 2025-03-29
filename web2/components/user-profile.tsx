@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-hooks"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -11,6 +11,19 @@ import { ProseCard } from "@/components/prose-card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/components/ui/use-toast"
 import { Loader2 } from "lucide-react"
+import { useSSE } from "@/lib/use-sse"
+
+type Prose = {
+  id: string
+  body: string
+  username: string
+  created_at: string
+  updated_at: string
+  mine: boolean
+  liked: boolean
+  likes_count: number
+  comments: number
+}
 
 type UserProfileProps = {
   user: {
@@ -21,27 +34,70 @@ type UserProfileProps = {
     follows_back: boolean
     followers: number
     following: number
-    proses?: Array<{
-      id: string
-      body: string
-      created_at: string
-      updated_at: string
-      mine: boolean
-      liked: boolean
-      likes_count: number
-      comments: number
-    }>
   }
 }
 
 export function UserProfile({ user: initialUser }: UserProfileProps) {
   const [user, setUser] = useState(initialUser)
+  const [proses, setProses] = useState<Prose[]>([]) // Fixed incorrect setter name
   const [isLoading, setIsLoading] = useState(false)
   const { user: currentUser, token } = useAuth()
+  const [error, setError] = useState<string | null>(null)
   const { toast } = useToast()
   const router = useRouter()
 
   const isCurrentUser = currentUser?.username === user.username
+
+  const { data, error: sseError } = useSSE<Prose[]>(`/api/${user.username}/prose`, token, {
+    onMessage: (data) => {
+      if (data) {
+        fetchUserProse(user.username)
+        setProses(data)
+        setIsLoading(false)
+      }
+    },
+    fallbackToFetch: true,
+  })
+
+  useEffect(() => {
+    if (data) {
+      setProses(data)
+      setIsLoading(false)
+    }
+    if (sseError) {
+      setError("Failed to load prose. Please try again.")
+      setIsLoading(false)
+    }
+  }, [data, sseError])
+
+  const fetchUserProse = async (username: string) => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const response = await fetch(`/api/${username}/prose`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch prose")
+      }
+
+      const data = await response.json()
+      setProses(data.map((prose: Prose) => ({ ...prose, username })))
+    } catch (err) {
+      setError("Failed to refresh timeline. Please try again.")
+      toast({
+        title: "Error",
+        description: "Failed to refresh timeline",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const handleToggleFollow = async () => {
     setIsLoading(true)
@@ -77,7 +133,7 @@ export function UserProfile({ user: initialUser }: UserProfileProps) {
   }
 
   const handleLikeToggle = async (proseId: string) => {
-    if (!user.proses) return
+    if (!proses) return
 
     try {
       const response = await fetch(`/api/prose/${proseId}/togglelike`, {
@@ -93,20 +149,9 @@ export function UserProfile({ user: initialUser }: UserProfileProps) {
 
       const result = await response.json()
 
-      // Update the prose in the user's proses list
-      setUser({
-        ...user,
-        proses: user.proses.map((prose) => {
-          if (prose.id === proseId) {
-            return {
-              ...prose,
-              liked: result.liked,
-              likes_count: result.likes_count,
-            }
-          }
-          return prose
-        }),
-      })
+      setProses(proses.map(prose =>
+        prose.id === proseId ? { ...prose, liked: result.liked, likes_count: result.likes_count } : prose
+      ))
     } catch (err) {
       toast({
         title: "Error",
@@ -117,7 +162,7 @@ export function UserProfile({ user: initialUser }: UserProfileProps) {
   }
 
   const handleDeleteProse = async (proseId: string) => {
-    if (!user.proses) return
+    if (!proses) return
 
     try {
       const response = await fetch(`/api/prose/${proseId}`, {
@@ -131,11 +176,7 @@ export function UserProfile({ user: initialUser }: UserProfileProps) {
         throw new Error("Failed to delete verse")
       }
 
-      // Remove the prose from the user's proses list
-      setUser({
-        ...user,
-        proses: user.proses.filter((prose) => prose.id !== proseId),
-      })
+      setProses(proses.filter(prose => prose.id !== proseId)) // Fixed prose update logic
 
       toast({
         title: "Verse deleted",
@@ -191,60 +232,14 @@ export function UserProfile({ user: initialUser }: UserProfileProps) {
 
       <Tabs defaultValue="verses">
         <TabsList className="w-full bg-white dark:bg-slate-900">
-          <TabsTrigger value="verses" className="flex-1">
-            Verses
-          </TabsTrigger>
-          <TabsTrigger value="likes" className="flex-1">
-            Likes
-          </TabsTrigger>
+          <TabsTrigger value="verses" className="flex-1">Verses</TabsTrigger>
+          <TabsTrigger value="likes" className="flex-1">Likes</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="verses" className="mt-4 space-y-6">
-          {!user.proses ? (
-            <div className="space-y-6">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="rounded-lg border bg-white dark:bg-slate-900 p-4 space-y-4">
-                  <div className="flex items-center space-x-4">
-                    <Skeleton className="h-12 w-12 rounded-full" />
-                    <div className="space-y-2">
-                      <Skeleton className="h-4 w-[150px]" />
-                      <Skeleton className="h-4 w-[100px]" />
-                    </div>
-                  </div>
-                  <Skeleton className="h-24 w-full" />
-                  <div className="flex space-x-4">
-                    <Skeleton className="h-8 w-16" />
-                    <Skeleton className="h-8 w-16" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : user.proses.length === 0 ? (
-            <div className="rounded-lg border bg-white dark:bg-slate-900 p-8 text-center">
-              <p className="text-muted-foreground">No verses found.</p>
-            </div>
-          ) : (
-            user.proses.map((prose) => (
-              <ProseCard
-                key={prose.id}
-                prose={{
-                  ...prose,
-                  username: user.username,
-                }}
-                onLikeToggle={() => handleLikeToggle(prose.id)}
-                onDelete={isCurrentUser ? () => handleDeleteProse(prose.id) : undefined}
-              />
-            ))
-          )}
-        </TabsContent>
-
-        <TabsContent value="likes" className="mt-4">
-          <div className="rounded-lg border bg-white dark:bg-slate-900 p-8 text-center">
-            <p className="text-muted-foreground">Liked verses will appear here.</p>
-          </div>
+        <TabsContent value="verses">
+          {isLoading ? <p>Loading...</p> : proses.length ? proses.map(prose => <ProseCard key={prose.id} prose={prose} onLikeToggle={() => handleLikeToggle(prose.id)} onDelete={isCurrentUser ? () => handleDeleteProse(prose.id) : undefined} />) : <p>No verses found.</p>}
         </TabsContent>
       </Tabs>
     </div>
   )
 }
-
