@@ -4,7 +4,8 @@ import { MainLayout } from "@/components/main-layout"
 import { UserProfile } from "@/components/user-profile"
 import { getUserProfile } from "@/lib/api"
 
-export default async function ProfilePage({ params }: { params: { username: string } }) {
+export default async function ProfilePage(props: { params: Promise<{ username: string }> }) {
+  const params = await props.params;
   const cookieStore = await cookies()
   const token = cookieStore.get("auth_token")
 
