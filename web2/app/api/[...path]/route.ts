@@ -89,7 +89,14 @@ export async function POST(request: NextRequest, { params }: { params: { path: s
   //const path = params.path.join("/")
 
   const token = request.headers.get("Authorization")?.split(" ")[1]
-  const body = await request.json()
+  let body = {}
+  try {
+    body = request.body ? await request.json() : {};
+  } catch (error) {
+    console.error("Invalid JSON:", error);
+    return NextResponse.json({ error: "Invalid JSON input" }, { status: 400 });
+  }
+
 
   try {
     const response = await fetch(`${process.env.API_URL}/api/${path}`, {

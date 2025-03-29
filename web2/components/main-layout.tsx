@@ -7,7 +7,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useAuth } from "@/lib/auth-hooks"
 import { Button } from "@/components/ui/button"
-import { Home, Bell, User, LogOut, Menu, X, PenSquare, BookOpen } from "lucide-react"
+import { Home, Bell, User, LogOut, Menu, X, PenSquare, BookOpen, Users } from "lucide-react"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { NotificationIndicator } from "@/components/notification-indicator"
 import { ComposeProseDialog } from "@/components/compose-prose-dialog"
@@ -22,6 +22,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
     { href: "/", label: "Home", icon: Home },
     { href: "/notifications", label: "Notifications", icon: Bell, indicator: true },
     { href: `/profile/${user?.username}`, label: "Profile", icon: User },
+    {href: "/users", label: "Users", icon: Users}
   ]
 
   return (

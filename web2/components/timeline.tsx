@@ -1,89 +1,100 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useAuth } from "@/lib/auth-hooks"
-import { ProseCard } from "@/components/prose-card"
-import { Skeleton } from "@/components/ui/skeleton"
-import { useToast } from "@/components/ui/use-toast"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AlertCircle, RefreshCw } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { useSSE } from "@/lib/use-sse"
+import { useState, useEffect } from "react";
+import { useAuth } from "@/lib/auth-hooks";
+import { ProseCard } from "@/components/prose-card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/components/ui/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useSSE } from "@/lib/use-sse";
+
+type Prose = {
+  id: string;
+  body: string;
+  created_at: string;
+  updated_at: string;
+  username: string;
+  mine: boolean;
+  liked: boolean;
+  likes_count: number;
+  comments: number;
+};
 
 type TimelineItem = {
-  id: number
-  userid?: string
-  prose: {
-    id: string
-    body: string
-    created_at: string
-    updated_at: string
-    username: string
-    mine: boolean
-    liked: boolean
-    likes_count: number
-    comments: number
-  }
-}
+  id: number;
+  userid?: string;
+  prose: Prose;
+};
 
 export function Timeline() {
-  const { user, token } = useAuth()
-  const [timelineItems, setTimelineItems] = useState<TimelineItem[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const { toast } = useToast()
+  const { user, token } = useAuth();
+  const [timelineItems, setTimelineItems] = useState<TimelineItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   // Try to use SSE for timeline, fall back to regular fetch
   const { data, error: sseError } = useSSE<TimelineItem[]>("/api/timeline", token, {
     onMessage: (data) => {
       if (data) {
-        setTimelineItems(data)
-        setIsLoading(false)
+        setTimelineItems(data);
+        setIsLoading(false);
       }
     },
     fallbackToFetch: true,
-  })
+  });
+
+  useEffect(() => {
+    refreshTimeline(); // Ensure data is fetched when the page loads
+  }, []);
 
   useEffect(() => {
     if (data) {
-      setTimelineItems(data)
-      setIsLoading(false)
+      setTimelineItems(data);
+      setIsLoading(false);
     }
 
     if (sseError) {
-      setError("Failed to load timeline. Please try again.")
-      setIsLoading(false)
+      setError("Failed to load timeline. Please try again.");
+      setIsLoading(false);
     }
-  }, [data, sseError])
+  }, [data, sseError]);
 
   const refreshTimeline = async () => {
-    setIsLoading(true)
-    setError(null)
+    console.log("TIMELINE CALL");
+    setIsLoading(true);
+    setError(null);
 
     try {
       const response = await fetch("/api/timeline", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      })
+      });
+      console.log("RESPONSE")
+      console.log(response)
 
       if (!response.ok) {
-        throw new Error("Failed to refresh timeline")
+        throw new Error("Failed to refresh timeline");
       }
 
-      const data = await response.json()
-      setTimelineItems(data)
+      const data = await response.json();
+      console.log("DATA")
+      console.log(data);
+      setTimelineItems(data);
     } catch (err) {
-      setError("Failed to refresh timeline. Please try again.")
+      setError("Failed to refresh timeline. Please try again.");
       toast({
         title: "Error",
         description: "Failed to refresh timeline",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleLikeToggle = async (proseId: string) => {
     try {
@@ -92,13 +103,13 @@ export function Timeline() {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      })
+      });
 
       if (!response.ok) {
-        throw new Error("Failed to toggle like")
+        throw new Error("Failed to toggle like");
       }
 
-      const result = await response.json()
+      const result = await response.json();
 
       // Update the prose in the list
       setTimelineItems(
@@ -111,55 +122,19 @@ export function Timeline() {
                 liked: result.liked,
                 likes_count: result.likes_count,
               },
-            }
+            };
           }
-          return item
-        }),
-      )
+          return item;
+        })
+      );
     } catch (err) {
       toast({
         title: "Error",
         description: "Failed to like/unlike verse",
         variant: "destructive",
-      })
+      });
     }
-  }
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="rounded-lg border bg-white dark:bg-slate-900 p-4 space-y-4">
-            <div className="flex items-center space-x-4">
-              <Skeleton className="h-12 w-12 rounded-full" />
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-[150px]" />
-                <Skeleton className="h-4 w-[100px]" />
-              </div>
-            </div>
-            <Skeleton className="h-24 w-full" />
-            <div className="flex space-x-4">
-              <Skeleton className="h-8 w-16" />
-              <Skeleton className="h-8 w-16" />
-            </div>
-          </div>
-        ))}
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <Alert variant="destructive" className="mb-4">
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>{error}</AlertDescription>
-        <Button variant="outline" size="sm" className="ml-auto" onClick={refreshTimeline}>
-          <RefreshCw className="mr-2 h-4 w-4" />
-          Retry
-        </Button>
-      </Alert>
-    )
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -171,7 +146,35 @@ export function Timeline() {
         </Button>
       </div>
 
-      {timelineItems.length === 0 ? (
+      {isLoading ? (
+        <div className="space-y-6">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="rounded-lg border bg-white dark:bg-slate-900 p-4 space-y-4">
+              <div className="flex items-center space-x-4">
+                <Skeleton className="h-12 w-12 rounded-full" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-[150px]" />
+                  <Skeleton className="h-4 w-[100px]" />
+                </div>
+              </div>
+              <Skeleton className="h-24 w-full" />
+              <div className="flex space-x-4">
+                <Skeleton className="h-8 w-16" />
+                <Skeleton className="h-8 w-16" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : error ? (
+        <Alert variant="destructive" className="mb-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+          <Button variant="outline" size="sm" className="ml-auto" onClick={refreshTimeline}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Retry
+          </Button>
+        </Alert>
+      ) : timelineItems.length === 0 ? (
         <div className="rounded-lg border bg-white dark:bg-slate-900 p-8 text-center">
           <p className="text-muted-foreground">No verses found. Follow writers to see their work here.</p>
         </div>
@@ -181,6 +184,5 @@ export function Timeline() {
         ))
       )}
     </div>
-  )
+  );
 }
-

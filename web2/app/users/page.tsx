@@ -1,10 +1,10 @@
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { MainLayout } from "@/components/main-layout"
-import { NotificationsList } from "@/components/notifications-list"
+import { UsersList } from "@/components/users-list"
 
-export default function NotificationsPage() {
-  const cookieStore = cookies()
+export default async function UsersPage() {
+  const cookieStore = await cookies()
   const token = cookieStore.get("auth_token")
 
   if (!token) {
@@ -13,7 +13,7 @@ export default function NotificationsPage() {
 
   return (
     <MainLayout>
-      <NotificationsList />
+      <UsersList />
     </MainLayout>
   )
 }
