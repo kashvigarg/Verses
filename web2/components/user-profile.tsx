@@ -37,8 +37,8 @@ type UserProfileProps = {
 
 export function UserProfile({ user: initialUser }: UserProfileProps) {
   const [user, setUser] = useState(initialUser);
-  // const [proses, setProses] = useState<Prose[]>([]);
-  const proses: Array<Prose> = []
+  const [proses, setProses] = useState<Prose[]>([]);
+  // const proses: Array<Prose> = []
   const [isLoading, setIsLoading] = useState(false);
   const { user: currentUser, token } = useAuth();
   const [error, setError] = useState<string | null>(null);
@@ -64,7 +64,7 @@ export function UserProfile({ user: initialUser }: UserProfileProps) {
         }
 
         const data = await response.json();
-        // setProses(data);
+        setProses(data.map((p: Prose) => ({ ...p, username: p.username || user.username })));
       } catch (err) {
         setError("Failed to load prose. Please try again.");
         toast({
@@ -130,9 +130,9 @@ export function UserProfile({ user: initialUser }: UserProfileProps) {
 
       const result = await response.json();
 
-      // setProses(proses.map(prose =>
-      //   prose.id === proseId ? { ...prose, liked: result.liked, likes_count: result.likes_count } : prose
-      // ));
+      setProses(proses.map(prose =>
+        prose.id === proseId ? { ...prose, liked: result.liked, likes_count: result.likes_count } : prose
+      ));
     } catch (err) {
       toast({
         title: "Error",
@@ -157,7 +157,7 @@ export function UserProfile({ user: initialUser }: UserProfileProps) {
         throw new Error("Failed to delete verse");
       }
 
-      // setProses(proses.filter(prose => prose.id !== proseId));
+      setProses(proses.filter(prose => prose.id !== proseId));
 
       toast({
         title: "Verse deleted",
