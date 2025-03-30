@@ -215,13 +215,5 @@ func (cfg *Handler) Broadcastnotifications(n Notification) {
 		cfg.logger.Info("error publishing notification item:", zap.Error(err))
 		return
 	}
-	/*
-		cfg.Clients.timelineClients.Range(func(key, _ any) bool {
-			client := key.(*notificationclient)
-			if client.Userid == n.Userid {
-				client.notifications <- n
-			}
-			return true
-		})*/
 
 }

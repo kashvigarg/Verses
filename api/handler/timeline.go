@@ -20,24 +20,7 @@ type timeline_item struct {
 	Post   Prose       `json:"prose"`
 }
 
-/*
-type timelineclient struct {
-	timeline chan timeline_item
-	Userid   pgtype.UUID
-}*/
-
 func (cfg *Handler) Timeline(w http.ResponseWriter, r *http.Request) {
-	// token, err := auth.BearerHeader(r.Header)
-	// if err != nil {
-	// 	respondWithError(w, http.StatusUnauthorized, err.Error())
-	// 	return
-	// }
-
-	// authorid, err := auth.ValidateToken(token, cfg.Jwtsecret)
-	// if err != nil {
-	// 	respondWithError(w, http.StatusUnauthorized, err.Error())
-	// 	return
-	// }
 
 	authorid := r.Context().Value(middleware.UserIDKey).(string)
 
@@ -126,19 +109,10 @@ func (cfg *Handler) Timeline(w http.ResponseWriter, r *http.Request) {
 
 func (cfg *Handler) Broadcasttimeline(ti timeline_item) {
 
-	err := pubsub.Publish(cfg.pubsub, "timeline_direct", "timeline_item"+uuid.UUID(ti.Userid.Bytes).String(), ti)
+	err := pubsub.Publish(cfg.pubsub, "timeline_direct", "timeline_item."+uuid.UUID(ti.Userid.Bytes).String(), ti)
 	if err != nil {
 		cfg.logger.Info("failed to publish time line item:", zap.Error(err))
 		return
 	}
-
-	/*
-		cfg.Clients.timelineClients.Range(func(key, _ any) bool {
-			client := key.(*timelineclient)
-			if client.Userid == ti.Userid {
-				client.timeline <- ti
-			}
-			return true
-		})*/
 
 }

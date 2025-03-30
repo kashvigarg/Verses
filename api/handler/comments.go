@@ -249,13 +249,5 @@ func (cfg *Handler) Broadcastcomments(c Comment) {
 		cfg.logger.Info("error while publishing commment item:", zap.Error(err))
 		return
 	}
-	/*
-		cfg.Clients.commentClients.Range(func(key, _ any) bool {
-			client := key.(*commentclient)
-			if client.Proseid == c.Proseid && client.Userid != c.Userid {
-				client.comments <- c
-			}
-			return true
-		})
-	*/
+
 }
