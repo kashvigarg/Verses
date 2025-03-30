@@ -33,7 +33,7 @@ func respondWithJson(w http.ResponseWriter, code int, res interface{}) {
 	w.Write(data)
 }
 
-func writesse(w io.Writer, res interface{}) {
+func writesse(w io.Writer, event string, res interface{}) {
 
 	v, err := json.Marshal(res)
 	if err != nil {
@@ -42,6 +42,6 @@ func writesse(w io.Writer, res interface{}) {
 		return
 	}
 
-	fmt.Fprintf(w, "items : %s\n\n", v)
+	fmt.Fprintf(w, "event : %s\ndata : %s", event, string(v))
 
 }

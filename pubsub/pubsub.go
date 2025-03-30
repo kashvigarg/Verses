@@ -47,6 +47,7 @@ func Consume[T any](conn *amqp.Connection, exchange, queueName, key string) (<-c
 	if err != nil {
 		return msgch, err
 	}
+	log.Println(deliverychan)
 
 	go func() {
 		for msg := range deliverychan {
@@ -55,6 +56,7 @@ func Consume[T any](conn *amqp.Connection, exchange, queueName, key string) (<-c
 			var data T
 			err := decoder.Decode(&data)
 			log.Println("error while decoding the message:", err)
+			log.Println(msg)
 			msgch <- data
 		}
 	}()

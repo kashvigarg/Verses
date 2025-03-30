@@ -5,7 +5,7 @@ metadata:
 spec:
   clusterIP: None
   selector:
-    app: rabbitmq-service
+    app: rabbitmq
   containerPort:
     - name: amqp
       port: 5672
