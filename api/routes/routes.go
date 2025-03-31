@@ -16,7 +16,7 @@ func SetupRoutes(h *handler.Handler) *chi.Mux {
 	apiRouter.Post("/login", h.UserLogin)
 	apiRouter.Get("/admin/healthz", middleware.Apireadiness)
 	apiRouter.Get("/admin/metrics", h.Metrics)
-
+	//ARRAY_APPEND(notifications.actors,$1),
 	// Protected Routes
 	apiRouter.Group(func(r chi.Router) {
 		r.Use(middleware.Authmiddleware(h.Jwtsecret))
@@ -36,6 +36,7 @@ func SetupRoutes(h *handler.Handler) *chi.Mux {
 		r.Post("/users/{username}/toggle_follow", h.ToggleFollow)
 		r.Get("/notifications", h.Notifications)
 		r.Post("/notifications/{notificationid}/mark_as_read", h.ReadNotification)
+		r.Post("/notifications/mark_as_read", h.ReadNotifications)
 		r.Post("/refresh", h.VerifyRefresh)
 		r.Post("/revoke", h.RevokeToken)
 	})
