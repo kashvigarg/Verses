@@ -122,6 +122,7 @@ export function UserProfile({ user: initialUser }: UserProfileProps) {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        body: JSON.stringify("")
       });
 
       if (!response.ok) {
@@ -214,7 +215,7 @@ export function UserProfile({ user: initialUser }: UserProfileProps) {
       <Tabs defaultValue="verses">
         <TabsList className="w-full bg-white dark:bg-slate-900">
           <TabsTrigger value="verses" className="flex-1">Verses</TabsTrigger>
-          <TabsTrigger value="likes" className="flex-1">Likes</TabsTrigger>
+          {/* <TabsTrigger value="likes" className="flex-1">Likes</TabsTrigger> */}
         </TabsList>
 
         <TabsContent value="verses">

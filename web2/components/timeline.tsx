@@ -35,34 +35,29 @@ export function Timeline() {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // Try to use SSE for timeline, fall back to regular fetch
+  // Use SSE to get timeline updates
   const { data, error: sseError } = useSSE<TimelineItem[]>("/api/timeline", token, {
-    onMessage: (data) => {
-      if (data) {
-        setTimelineItems(data);
+    onMessage: (newData) => {
+      if (newData && newData.length > 0) {
+        setTimelineItems(newData);
         setIsLoading(false);
       }
     },
     fallbackToFetch: true,
   });
 
+  // Fetch timeline if SSE fails
   useEffect(() => {
-    refreshTimeline(); // Ensure data is fetched when the page loads
-  }, []);
-
-  useEffect(() => {
-    if (data) {
+    if (sseError || !data || data.length === 0) {
+      fetchTimeline();
+    } else {
       setTimelineItems(data);
-      setIsLoading(false);
-    }
-
-    if (sseError) {
-      setError("Failed to load timeline. Please try again.");
       setIsLoading(false);
     }
   }, [data, sseError]);
 
-  const refreshTimeline = async () => {
+  // Fetch timeline function
+  const fetchTimeline = async () => {
     console.log("TIMELINE CALL");
     setIsLoading(true);
     setError(null);
@@ -73,17 +68,15 @@ export function Timeline() {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log("RESPONSE")
-      console.log(response)
 
       if (!response.ok) {
         throw new Error("Failed to refresh timeline");
       }
 
-      const data = await response.json();
-      console.log("DATA")
-      console.log(data);
-      setTimelineItems(data);
+      const responseData = await response.json();
+      console.log("DATA:", responseData);
+
+      setTimelineItems(responseData);
     } catch (err) {
       setError("Failed to refresh timeline. Please try again.");
       toast({
@@ -96,6 +89,7 @@ export function Timeline() {
     }
   };
 
+  // Handle like toggles
   const handleLikeToggle = async (proseId: string) => {
     try {
       const response = await fetch(`/api/prose/${proseId}/togglelike`, {
@@ -111,7 +105,7 @@ export function Timeline() {
 
       const result = await response.json();
 
-      // Update the prose in the list
+      // Update the liked state in the timeline
       setTimelineItems(
         timelineItems.map((item) => {
           if (item.prose.id === proseId) {
@@ -140,7 +134,7 @@ export function Timeline() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-serif font-bold">Your Timeline</h2>
-        <Button variant="outline" size="sm" onClick={refreshTimeline}>
+        <Button variant="outline" size="sm" onClick={fetchTimeline}>
           <RefreshCw className="mr-2 h-4 w-4" />
           Refresh
         </Button>
@@ -169,7 +163,7 @@ export function Timeline() {
         <Alert variant="destructive" className="mb-4">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
-          <Button variant="outline" size="sm" className="ml-auto" onClick={refreshTimeline}>
+          <Button variant="outline" size="sm" className="ml-auto" onClick={fetchTimeline}>
             <RefreshCw className="mr-2 h-4 w-4" />
             Retry
           </Button>
