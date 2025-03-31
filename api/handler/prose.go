@@ -137,6 +137,7 @@ func (cfg *Handler) ProsebyId(w http.ResponseWriter, r *http.Request) {
 	}
 
 	prose := Prose{
+		ID:          post.ID,
 		Username:    post.Username,
 		Body:        post.Body,
 		Created_at:  post.CreatedAt,
