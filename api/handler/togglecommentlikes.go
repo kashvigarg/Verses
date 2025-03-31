@@ -36,6 +36,7 @@ func (cfg *Handler) ToggCommentLike(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		cfg.logger.Info("Error converting comment Id value to int type:", zap.Error(err))
 		respondWithError(w, http.StatusBadRequest, err.Error())
+		return
 	}
 
 	var pgUUID pgtype.UUID

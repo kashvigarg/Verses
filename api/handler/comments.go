@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -85,6 +86,14 @@ func (cfg *Handler) PostComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var pgtime pgtype.Timestamp
+	err = pgtime.Scan(time.Now().UTC())
+	if err != nil {
+		cfg.logger.Info("Error setting timestamp:", zap.Error(err))
+		respondWithError(w, http.StatusInternalServerError, "error parsing timestamp into pgtype value")
+		return
+	}
+
 	tx, err := cfg.DBpool.Begin(r.Context())
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
@@ -100,13 +109,14 @@ func (cfg *Handler) PostComment(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	comment, err := qtx.CreateComment(r.Context(), database.CreateCommentParams{
-		ProseID: proseid,
-		UserID:  pgUUID,
-		Body:    cleanText,
+		ProseID:   proseid,
+		UserID:    pgUUID,
+		Body:      cleanText,
+		CreatedAt: pgtime,
 	})
 
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "comment couldn't be created")
+		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
