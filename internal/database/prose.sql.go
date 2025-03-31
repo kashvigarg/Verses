@@ -71,7 +71,7 @@ func (q *Queries) Deleteprose(ctx context.Context, arg DeleteproseParams) error 
 }
 
 const getProseSingle = `-- name: GetProseSingle :one
-SELECT p.body,p.created_at,p.updated_at,p.likes, p.comments ,u.username ,
+SELECT p.body,p.id,p.created_at,p.updated_at,p.likes, p.comments ,u.username ,
 CASE WHEN author_id=$1 THEN true ELSE false END AS Mine,
 CASE WHEN Likes.user_id IS NOT NULL THEN true ELSE false END AS Liked
 FROM prose as p 
@@ -89,6 +89,7 @@ type GetProseSingleParams struct {
 
 type GetProseSingleRow struct {
 	Body      string
+	ID        pgtype.UUID
 	CreatedAt pgtype.Timestamp
 	UpdatedAt pgtype.Timestamp
 	Likes     int32
@@ -103,6 +104,7 @@ func (q *Queries) GetProseSingle(ctx context.Context, arg GetProseSingleParams) 
 	var i GetProseSingleRow
 	err := row.Scan(
 		&i.Body,
+		&i.ID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Likes,
