@@ -28,6 +28,6 @@ AND generated_at=$2
 WHERE id=$3 RETURNING actors;
 
 -- name: InsertCommentNotification :one
-INSERT INTO notifications(id, user_id,actors,type,prose_id,generated_at ) VALUES($1,$2,$3, 'comment',$4,$5) ON CONFLICT (user_id,actors,type,read) 
+INSERT INTO notifications(id, user_id,actors,type,prose_id,generated_at ) VALUES($1,$2,$3, 'comment',$4,$5) ON CONFLICT (user_id,prose_id,actors,type,read) 
 DO UPDATE SET actors= notifications.actors || $3, generated_at=$5
 RETURNING id,generated_at,actors;

@@ -32,7 +32,7 @@ func (cfg *Handler) CommentNotification(c Comment) {
 		ProseID:     c.Proseid,
 		GeneratedAt: generated_at_pgtype,
 		ID:          nid_pgtype,
-		Actors:      []string{c.Username},
+		Actors:      []string{c.User.Username},
 	})
 
 	if err != nil {

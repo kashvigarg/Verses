@@ -36,6 +36,7 @@ func SetupRoutes(h *handler.Handler) *chi.Mux {
 		r.Post("/users/{username}/toggle_follow", h.ToggleFollow)
 		r.Get("/notifications", h.Notifications)
 		r.Post("/notifications/{notificationid}/mark_as_read", h.ReadNotification)
+		r.Post("/notifications/mark_as_read", h.ReadNotifications)
 		r.Post("/refresh", h.VerifyRefresh)
 		r.Post("/revoke", h.RevokeToken)
 	})
