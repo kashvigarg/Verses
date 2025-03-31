@@ -202,6 +202,7 @@ func (cfg *Handler) ReadNotifications(w http.ResponseWriter, r *http.Request) {
 	err = cfg.DB.ReadNotificationAll(r.Context(), userid)
 
 	if err != nil {
+		cfg.logger.Info("Error reading notification", zap.Error(err))
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 	}
 
