@@ -13,7 +13,7 @@ import (
 
 func (cfg *Handler) CommentNotification(c Comment) {
 
-	nid := uuid.New()
+	nid := uuid.New().String()
 	var nid_pgtype pgtype.UUID
 	if err := nid_pgtype.Scan(nid); err != nil {
 		cfg.logger.Info("error while converting notification id to pgtype:", zap.Error(err))

@@ -16,7 +16,7 @@ func SetupRoutes(h *handler.Handler) *chi.Mux {
 	apiRouter.Post("/login", h.UserLogin)
 	apiRouter.Get("/admin/healthz", middleware.Apireadiness)
 	apiRouter.Get("/admin/metrics", h.Metrics)
-
+	//ARRAY_APPEND(notifications.actors,$1),
 	// Protected Routes
 	apiRouter.Group(func(r chi.Router) {
 		r.Use(middleware.Authmiddleware(h.Jwtsecret))

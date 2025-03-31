@@ -88,7 +88,7 @@ func (cfg *Handler) PostProse(w http.ResponseWriter, r *http.Request) {
 	var pgtime pgtype.Timestamp
 	err = pgtime.Scan(time.Now().UTC())
 	if err != nil {
-		cfg.logger.Info("Error setting timeestamp:", zap.Error(err))
+		cfg.logger.Info("Error setting timestamp:", zap.Error(err))
 		respondWithError(w, http.StatusInternalServerError, "error parsing timestamp into pgtype value")
 		return
 	}
