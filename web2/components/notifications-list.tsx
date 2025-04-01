@@ -31,6 +31,8 @@ export function NotificationsList() {
   const { data, error: sseError } = useSSE<Notification[]>("/api/notifications", token, {
     onMessage: (data) => {
       if (data) {
+        console.log("SSE CHECK FOR NOTIFS")
+        console.log(data)
         if (data!=null){
           setNotifications(data)} else {
             setNotifications([])
@@ -69,7 +71,7 @@ export function NotificationsList() {
 
       const data = await response.json()
       if (data!=null){
-      setNotifications(data)} else {
+        setNotifications(data.filter((notification: Notification) => !notification.read));} else {
         setNotifications([])
       }
     } catch (err) {
@@ -83,6 +85,10 @@ export function NotificationsList() {
     }
   }
 
+  const removeNotification = (notificationId: string) => {
+    setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
+  };
+
   const markAllAsRead = async () => {
     try {
       const response = await fetch("/api/notifications/mark_as_read", {
@@ -90,22 +96,25 @@ export function NotificationsList() {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        body: JSON.stringify("")
       })
+
+      console.log(response)
 
       if (!response.ok) {
         throw new Error("Failed to mark notifications as read")
       }
 
       // Update all notifications as read
-      if (notifications!=null){
-        setNotifications(
-          notifications.map((notification) => ({
-            ...notification,
-            read: true,
-          })),
-        )} else {
+      // if (notifications!=null){
+      //   setNotifications(
+      //     notifications.map((notification) => ({
+      //       ...notification,
+      //       read: true,
+      //     })),
+      //   )} else {
           setNotifications([])
-        }
+        // }
       
 
       toast({
@@ -113,6 +122,7 @@ export function NotificationsList() {
         description: "All notifications have been marked as read",
       })
     } catch (err) {
+      console.log(err)
       toast({
         title: "Error",
         description: "Failed to mark notifications as read",
@@ -128,27 +138,15 @@ export function NotificationsList() {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        body: JSON.stringify("")
       })
-
+      console.log(response)
       if (!response.ok) {
         throw new Error("Failed to mark notification as read")
       }
 
       // Update the notification as read
-      if (notifications!=null) {
-      setNotifications(
-        notifications.map((notification) => {
-          if (notification.id === notificationId) {
-            return {
-              ...notification,
-              read: true,
-            }
-          }
-          return notification
-        }),
-      )  } else {
-        setNotifications([])
-      }
+      removeNotification(notificationId)
     } catch (err) {
       toast({
         title: "Error",
@@ -189,7 +187,7 @@ export function NotificationsList() {
         return (
           <>
             <span className="font-semibold">{actorText}</span>
-            {" commented on your verse"}
+            {" commented on your prose"}
           </>
         )
       case "follow":
@@ -245,6 +243,7 @@ export function NotificationsList() {
         </div>
       ) : (
         notifications.map((notification) => (
+          
           <Card
             key={notification.id}
             className={`${!notification.read ? "bg-muted/50" : "bg-white dark:bg-slate-900"}`}

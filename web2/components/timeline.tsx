@@ -10,26 +10,24 @@ import { AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSSE } from "@/lib/use-sse";
 
-type Prose = {
-  id: string;
-  body: string;
-  created_at: string;
-  updated_at: string;
-  username: string;
-  mine: boolean;
-  liked: boolean;
-  likes_count: number;
-  comments: number;
-};
-
 type TimelineItem = {
   id: number;
   userid?: string;
-  prose: Prose;
+  prose: {
+    id: string;
+    body: string;
+    created_at: string;
+    updated_at: string;
+    username: string;
+    mine: boolean;
+    liked: boolean;
+    likes_count: number;
+    comments: number;
+  };
 };
 
 export function Timeline() {
-  const { user, token } = useAuth();
+  const { token } = useAuth();
   const [timelineItems, setTimelineItems] = useState<TimelineItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,27 +35,37 @@ export function Timeline() {
 
   // Use SSE to get timeline updates
   const { data, error: sseError } = useSSE<TimelineItem[]>("/api/timeline", token, {
-    onMessage: (newData) => {
-      if (newData && newData.length > 0) {
-        setTimelineItems(newData);
+    onMessage: (data) => {
+      if (data) {
+        console.log("SSE CHECK FOR TL")
+        console.log(data)
+        if (data!=null){
+        setTimelineItems(data);
         setIsLoading(false);
+        }
       }
+      console.log("SSE NO DATA FOR TL")
     },
     fallbackToFetch: true,
   });
 
   // Fetch timeline if SSE fails
   useEffect(() => {
-    if (sseError || !data || data.length === 0) {
-      fetchTimeline();
-    } else {
-      setTimelineItems(data);
-      setIsLoading(false);
+    if (data) {
+      if (data!=null){
+        setTimelineItems(data)} else {
+          setTimelineItems([])
+        }
+      setIsLoading(false)
+    }
+
+    if (sseError) {
+      fetchTimelineItems()
     }
   }, [data, sseError]);
 
   // Fetch timeline function
-  const fetchTimeline = async () => {
+  const fetchTimelineItems = async () => {
     console.log("TIMELINE CALL");
     setIsLoading(true);
     setError(null);
@@ -76,7 +84,11 @@ export function Timeline() {
       const responseData = await response.json();
       console.log("DATA:", responseData);
 
-      setTimelineItems(responseData);
+      if (responseData!=null){
+        setTimelineItems(responseData);
+      } else {
+        setTimelineItems([])
+      }
     } catch (err) {
       setError("Failed to refresh timeline. Please try again.");
       toast({
@@ -134,7 +146,7 @@ export function Timeline() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-serif font-bold">Your Timeline</h2>
-        <Button variant="outline" size="sm" onClick={fetchTimeline}>
+        <Button variant="outline" size="sm" onClick={fetchTimelineItems}>
           <RefreshCw className="mr-2 h-4 w-4" />
           Refresh
         </Button>
@@ -163,7 +175,7 @@ export function Timeline() {
         <Alert variant="destructive" className="mb-4">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
-          <Button variant="outline" size="sm" className="ml-auto" onClick={fetchTimeline}>
+          <Button variant="outline" size="sm" className="ml-auto" onClick={fetchTimelineItems}>
             <RefreshCw className="mr-2 h-4 w-4" />
             Retry
           </Button>
