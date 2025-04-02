@@ -151,6 +151,7 @@ func (cfg *Handler) ReadNotification(w http.ResponseWriter, r *http.Request) {
 	var userid pgtype.UUID
 	err := userid.Scan(useridstr)
 	if err != nil {
+		cfg.logger.Info("Error setting UUID:", zap.Error(err))
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -158,7 +159,7 @@ func (cfg *Handler) ReadNotification(w http.ResponseWriter, r *http.Request) {
 	var notificationid pgtype.UUID
 	err = notificationid.Scan(useridstr)
 	if err != nil {
-		cfg.logger.Info("Error setting UUID:", zap.Error(err))
+		cfg.logger.Info("Error setting notification ID:", zap.Error(err))
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -169,10 +170,11 @@ func (cfg *Handler) ReadNotification(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
+		cfg.logger.Info("error while reading notification", zap.Error(err))
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 	}
 
-	respondWithJson(w, http.StatusNoContent, "Notification Read")
+	respondWithJson(w, http.StatusOK, "Notification Read")
 }
 
 func (cfg *Handler) ReadNotifications(w http.ResponseWriter, r *http.Request) {
@@ -202,6 +204,7 @@ func (cfg *Handler) ReadNotifications(w http.ResponseWriter, r *http.Request) {
 	err = cfg.DB.ReadNotificationAll(r.Context(), userid)
 
 	if err != nil {
+		cfg.logger.Info("Error reading notification", zap.Error(err))
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 	}
 
