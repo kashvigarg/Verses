@@ -22,7 +22,7 @@ export function useSSE<T>(url: string, token: string | null, options: SSEOptions
     const connectSSE = () => {
       try {
         // Try to use SSE
-        eventSource = new EventSource(`${url}?token=${token}`)
+        eventSource = new EventSource(`${url}?token=${token}&sse=true`)
 
         eventSource.onopen = () => {
           setIsConnected(true)

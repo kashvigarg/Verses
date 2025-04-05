@@ -71,7 +71,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     checkAuth()
-  }, [user])
+  }, [])
 
   const refreshToken = async () => {
     try {
@@ -163,6 +163,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       })
 
       if (!response.ok) {
+        console.log(response)
         throw new Error("Signup failed")
       }
 
