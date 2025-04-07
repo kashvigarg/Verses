@@ -22,21 +22,25 @@ export function useSSE<T>(url: string, token: string | null, options: SSEOptions
     const connectSSE = () => {
       try {
         // Try to use SSE
-        eventSource = new EventSource(`${url}?token=${token}`)
+        eventSource = new EventSource(`${url}?token=${token}&sse=true`)
 
         eventSource.onopen = () => {
           setIsConnected(true)
         }
 
         eventSource.onmessage = (event) => {
-          try {
-            const parsedData = JSON.parse(event.data)
-            setData(parsedData)
-            options.onMessage?.(parsedData)
-          } catch (err) {
-            console.error("Error parsing SSE data", err)
+          if (event.data.startsWith("data:")) {
+            try {
+              const parsedData = JSON.parse(event.data.replace(/^data: /, ""));
+              setData(parsedData);
+              options.onMessage?.(parsedData);
+            } catch (err) {
+              console.error("Error parsing SSE data", err);
+            }
+          } else {
+            console.warn("Received non-SSE data", event.data);
           }
-        }
+        };
 
         eventSource.onerror = (err) => {
           console.error("SSE error", err)
