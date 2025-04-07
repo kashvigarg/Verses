@@ -42,6 +42,6 @@ func writesse(w io.Writer, event string, res interface{}) {
 		return
 	}
 
-	fmt.Fprintf(w, "event : %s\ndata : %s", event, string(v))
+	fmt.Fprintf(w, "event :%s\ndata :%s\n\n", event, string(v))
 
 }

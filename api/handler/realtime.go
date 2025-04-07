@@ -12,15 +12,15 @@ import (
 
 func (cfg *Handler) subscribeTotimeline(w http.ResponseWriter, ctx context.Context, userid pgtype.UUID) {
 	cfg.logger.Info("subscribed to timeline")
+
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
 	f, ok := w.(http.Flusher)
 
 	if !ok {
 		respondWithError(w, http.StatusBadRequest, "streaming unsupported")
 	}
-
-	w.Header().Set("Content-Type", "text/event-stream")
-	w.Header().Set("Cache-Control", "no-cache")
-	w.Header().Set("Connection", "keep-alive")
 
 	subch, err := pubsub.Consume[timeline_item](cfg.pubsub, "timeline_direct", "timeline_queue", "timeline_item."+uuid.UUID(userid.Bytes).String())
 	if err != nil {
@@ -48,15 +48,15 @@ func (cfg *Handler) subscribeTotimeline(w http.ResponseWriter, ctx context.Conte
 
 func (cfg *Handler) subscribeTocomments(w http.ResponseWriter, ctx context.Context, _ pgtype.UUID, proseid pgtype.UUID) {
 
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+
 	f, ok := w.(http.Flusher)
 
 	if !ok {
 		respondWithError(w, http.StatusBadRequest, "streaming unsupported")
 	}
-
-	w.Header().Set("Content-Type", "text/event-stream")
-	w.Header().Set("Cache-Control", "no-cache")
-	w.Header().Set("Connection", "keep-alive")
 
 	subch, err := pubsub.Consume[Comment](cfg.pubsub, "comments_direct", "comment_queue", "comment_item."+uuid.UUID(proseid.Bytes).String())
 	if err != nil {
@@ -86,15 +86,15 @@ func (cfg *Handler) subscribeTocomments(w http.ResponseWriter, ctx context.Conte
 
 func (cfg *Handler) subscribeTonotifications(w http.ResponseWriter, ctx context.Context, userid pgtype.UUID) {
 
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+
 	f, ok := w.(http.Flusher)
 
 	if !ok {
 		respondWithError(w, http.StatusBadRequest, "streaming unsupported")
 	}
-
-	w.Header().Set("Content-Type", "text/event-stream")
-	w.Header().Set("Cache-Control", "no-cache")
-	w.Header().Set("Connection", "keep-alive")
 
 	subch, err := pubsub.Consume[Notification](cfg.pubsub, "notifications_direct", "notification_queue", "notification_item."+uuid.UUID(userid.Bytes).String())
 	if err != nil {
