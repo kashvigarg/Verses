@@ -10,6 +10,7 @@
 // }
 
 // export function useSSE<T>(url: string, token: string | null, eventListener: string, options: SSEOptions = {}) {
+
 //   const [data, setData] = useState<T | null>(null)
 //   const [error, setError] = useState<Error | null>(null)
 //   const [isConnected, setIsConnected] = useState(false)
@@ -181,7 +182,6 @@ export function useSSE<T>(
       
       // Create EventSource connection
       const eventSource = new EventSource(fullUrl.toString(),{ withCredentials: true });
-      eventSourceRef.current = eventSource;
       
       // Listen for open events
       eventSource.onopen = () => {
@@ -195,6 +195,7 @@ export function useSSE<T>(
           
           if (event.data) {
             console.log(event.data)
+
             const parsedData = JSON.parse(event.data) as T;
             setData(parsedData);
             options.onMessage?.(parsedData);
@@ -266,6 +267,7 @@ export function useSSE<T>(
           setData(responseData as T);
           options.onMessage?.(responseData as T);
         }
+
       } catch (err) {
         console.error('Fallback fetch error:', err);
         const error = err instanceof Error ? err : new Error(String(err));
@@ -276,4 +278,3 @@ export function useSSE<T>(
   }, [url, token, eventName]);
 
   return { data, error };
-}

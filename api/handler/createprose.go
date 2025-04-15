@@ -112,7 +112,7 @@ func (cfg *Handler) PostProse(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "couldn't create Prose")
+		respondWithError(w, http.StatusInternalServerError, "couldn't create Prose"+err.Error())
 		return
 	}
 
