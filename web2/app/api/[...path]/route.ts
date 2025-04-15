@@ -137,8 +137,12 @@ export async function POST(request: NextRequest, { params }: { params: { path: s
       body: JSON.stringify(body),
     })
 
-    const data = await response.json()
-    return NextResponse.json(data, { status: response.status })
+    const responseText = await response.text()
+    console.log(responseText)
+    if (responseText.trim()!==""){
+      const responseData = JSON.parse(responseText)
+      return NextResponse.json(responseData, { status: response.status })
+    }
   } catch (error) {
     console.error("API error:", error)
     return NextResponse.json({ error: "Failed to post data" }, { status: 500 })
