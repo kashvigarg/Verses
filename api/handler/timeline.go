@@ -101,10 +101,9 @@ func (cfg *Handler) Timeline(w http.ResponseWriter, r *http.Request) {
 				Comments:    int(k.Comments),
 			},
 		})
-
-		respondWithJson(w, http.StatusOK, timeline)
-
 	}
+	respondWithJson(w, http.StatusOK, timeline)
+
 }
 
 func (cfg *Handler) Broadcasttimeline(ti timeline_item) {

@@ -34,35 +34,66 @@ export function Timeline() {
   const { toast } = useToast();
 
   // Use SSE to get timeline updates
-  const { data, error: sseError } = useSSE<TimelineItem[]>("/api/sse/timeline", token, "timeline",{
-    onMessage: (data) => {
-      if (data) {
-        console.log("SSE CHECK FOR TL")
-        console.log(data)
-        if (data!=null){
-        setTimelineItems(data);
-        setIsLoading(false);
+  const { data, error: sseError } = useSSE<TimelineItem>("/api/sse/timeline", token, "timeline",{
+  //   onMessage: (data) => {
+  //     if (data) {
+  //       console.log("SSE CHECK FOR TL")
+  //       console.log(data)
+  //       if (data!=null){
+  //       setTimelineItems(data);
+  //       setIsLoading(false);
+  //       }
+  //     }
+  //     console.log("SSE NO DATA FOR TL")
+  //   },
+  //   fallbackToFetch: true,
+  // });
+  onMessage: (newItem) => {
+    if (newItem) {
+      console.log("SSE received new timeline item:", newItem);
+      
+      // Add new item to the timeline without duplicates
+      setTimelineItems(prevItems => {
+        // Check if this item already exists in our timeline
+        const exists = prevItems.some(item => item.id === newItem.id);
+        if (exists) {
+          return prevItems;
         }
-      }
-      console.log("SSE NO DATA FOR TL")
-    },
-    fallbackToFetch: true,
-  });
+        
+        // Add new item to the beginning of the timeline
+        return [newItem, ...prevItems];
+      });
+      
+      setIsLoading(false);
+    }
+  },
+  fallbackToFetch: true,
+  onError: (err) => {
+    console.error("SSE error:", err);
+    // Let the useEffect handle errors
+  }
+});
 
   // Fetch timeline if SSE fails
   useEffect(() => {
-    if (data) {
-      if (data!=null){
-        setTimelineItems(data)} else {
-          setTimelineItems([])
-        }
-      setIsLoading(false)
-    }
-
+    // if (data) {
+    //   if (data!=null){
+    //     setTimelineItems(data)} else {
+    //       setTimelineItems([])
+    //     }
+    //   setIsLoading(false)
+    // }
+    fetchTimelineItems()
     if (sseError) {
-      fetchTimelineItems()
+      console.log("SSE error detected, falling back to regular fetch:", sseError);
+      fetchTimelineItems();
     }
-  }, [data, sseError]);
+  }, [sseError]);
+
+  //   if (sseError) {
+  //     fetchTimelineItems()
+  //   }
+  // }, [data, sseError]);
 
   // Fetch timeline function
   const fetchTimelineItems = async () => {
