@@ -92,6 +92,7 @@ export function Timeline() {
     // }
   }, [sseError]);
 
+
   // Fetch timeline function
   const fetchTimelineItems = async () => {
     console.log("TIMELINE CALL");
